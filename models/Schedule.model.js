@@ -5,7 +5,11 @@ const ScheduleSchema = mongoose.Schema({
     slots: [
         {
             booked: Boolean,
-            slot: String
+            slot: String,
+            appointmentId: {
+                type: mongoose.Schema.Types.ObjectId,
+                required: false
+            }
         }
     ]
 })

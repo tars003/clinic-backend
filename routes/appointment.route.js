@@ -12,6 +12,50 @@ const auth = require('../middleware/auth');
 
 const generateSlots = require('../util/GenerateSlots');
 
+// CONFIRM PAYMENT STATUS OF APPOINTMENT
+router.post('/confirm-appointment/:appointmentId', auth, async(req, res) => {
+    try {
+
+        if(coupon.isActive) {
+            const daySchedule = await Schedule.findById(appointmentData.date);
+            const checkSlot = (slot) => {
+                return slot.slot == appointmentData.slot
+            }
+            const slotObj = daySchedule.slots.filter(checkSlot);
+            if(slotObj.booked) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Slot is already booked, initiating a refund'
+                })
+            }
+            else {
+                const appointment = await Appointment.updateOne(req.params.appointmentId, {
+                    paymentStatus: 'COMPLETE'
+                });
+                const daySchedule = await Schedule.updateOne(appointment.date, {
+                    booked: true,
+                    appointmentId: req.params.appointmentId
+                });
+                return res.status(200).json({
+                    success: true,
+                    message: 'Appointment confirmed'
+                })
+            }
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: 'Coupon either expired or not valid'
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
 router.post('/get-invoice', auth, async(req, res) => {
     try {
