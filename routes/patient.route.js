@@ -13,7 +13,7 @@ router.get('/get-token/:phone', async (req, res) => {
         let patient = await Patient.findOne({ phone: req.params.phone });
         if(!patient){
             return res.status(404).json({
-                sucess: false,
+                success: false,
                 message: 'No user with found corresponding to given contact number !'
             });
         }
@@ -25,13 +25,13 @@ router.get('/get-token/:phone', async (req, res) => {
         const token = jwt.sign(tokenPayload, process.env.JWT_SECRET);
         console.log(`Requested token : ${token}`);
         return res.status(200).json({
-            sucess: true,
+            success: true,
             token,
         });
     } catch(err) {
         console.log(err);
         return res.status(503).json({
-            sucess: false,
+            success: false,
             error: 'Server error'
         });
     }
@@ -67,25 +67,31 @@ router.post('/create', auth, async (req, res) => {
                 gender,
                 age
             });
-
+            const payload = {
+                data: {
+                  id: patient.id,
+                },
+            };
+            const token = jwt.sign(payload, process.env.JWT_SECRET);
             return res.status(201).json({
                 success: true,
-                data: patient
+                data: patient,
+                token
             })
         }
 
     } catch(err) {
         console.log(err);
         return res.status(503).json({
-            sucess: false,
+            success: false,
             error: 'Server error'
         });
     }
 });
 
 // UPDATE ROUTE FOR PATIENT
-router.post('/update', auth, async (req, res) => {
-    try {
+    router.post('/update', auth, async (req, res) => {
+        try {
 
 
 
@@ -103,13 +109,13 @@ router.get('/get/:id', auth, async (req, res) => {
     try {
         const patient = await Patient.findById(req.params.id);
         return res.status(200).json({
-            sucess: true,
+            success: true,
             data: patient
         })
     } catch(err) {
         console.log(err);
         return res.status(503).json({
-            sucess: false,
+            success: false,
             error: 'Server error'
         });
     }
