@@ -27,6 +27,7 @@ router.get('/get-token/:phone', async (req, res) => {
         return res.status(200).json({
             success: true,
             token,
+            data: patient
         });
     } catch(err) {
         console.log(err);
@@ -38,7 +39,7 @@ router.get('/get-token/:phone', async (req, res) => {
 });
 
 // CREATE ROUTE FOR PATIENT
-router.post('/create', auth, async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         let obj = req.body;
         console.log(obj)
