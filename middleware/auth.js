@@ -4,15 +4,18 @@ const Patient = require("../models/Patient.model");
 
 module.exports = async function (req, res, next) {
   const token = req.get("auth-token");
-  console.log(token);
+  // console.log(token);
   const { data } = jwt.verify(token, process.env.JWT_SECRET);
   const id = data.id;
+  // console.log(id)
   if(id == 'admin'){
     next();
-  } else {
-     let user = await Patient.findById(id);
+  }
+  else {
+    let user = await Patient.findById(id);
     // If User is found
     if (user) {
+      // console.log(user);
       req.body.data = user;
       next();
     }

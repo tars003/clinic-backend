@@ -9,7 +9,8 @@ const DoctorSchema = new mongoose.Schema({
         gapTime: Number,
         startTime: String,
         endTime: String
-    }
+    },
+    fee : Number
 })
 
 module.exports = mongoose.model("doctor", DoctorSchema);

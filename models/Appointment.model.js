@@ -1,15 +1,15 @@
 const mongoose = require('mongoose');
 
 const AppointmentSchema = mongoose.Schema({
-    timeSlot: String,
-    patientId: mongoose.Schema.Types.ObjectId,
-    date: String,
-    name: String,
-    gender: String,
-    phone: String,
-    age: Number,
-    email: String,
-    problem: String,
+    timeSlot: String,                                     // manual
+    patientId: mongoose.Schema.Types.ObjectId,            // auto from auth token
+    date: String,                                         // manual for now
+    name: String,                                         // manual for now
+    gender: String,                                       // manual for now
+    phone: String,                                        // manual for now
+    age: Number,                                          // manual for now
+    email: String,                                        // manual for now
+    problem: String,                                      // manual for now
     coupon: {
         type: String,
         required: false

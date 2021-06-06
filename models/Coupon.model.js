@@ -4,7 +4,7 @@ const CouponSchema = new mongoose.Schema({
     _id: String,
     percentOff: Number,
     isActive: {
-        type: String,
+        type: Boolean,
         default: true
     }
 })
