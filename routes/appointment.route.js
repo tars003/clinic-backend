@@ -33,9 +33,10 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
             if(isActive) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
-                    return slot.slot == appointmentData.slot
+                    return slot.slot == appointmentData.timeSlot
                 }
                 const slotArr = daySchedule.slots.filter(checkSlot);
+                // console.log(slotArr);
                 // If the slot present in appointment object is acutally found in schedule
                 if(slotArr.length > 0) {
                     var slotObj = slotArr[0];
