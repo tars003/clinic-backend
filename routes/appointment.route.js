@@ -52,7 +52,7 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
                         var appointment = await Appointment.findById(appointmentId);
                         appointment['paymentStatus'] = 'COMPLETE';
                         appointment.overwrite(appointment);
-                        appointment.save();
+                        await appointment.save();
 
                         //  Updating day schedule for the slot to booked
                         var daySchedule1 = await Schedule.findById(date);

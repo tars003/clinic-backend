@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
+const moment = require('moment');
 const router = Router();
 
 const Appointment = require('../models/Appointment.model');
@@ -7,8 +8,55 @@ const Patient = require('../models/Patient.model.js');
 const Schedule = require('../models/Schedule.model');
 const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
+const Package = require('../models/Package.model');
 
 const auth = require('../middleware/auth');
+
+// ADD PACKAGE TO PATIENT
+router.get('/buy-package/:packageId', auth, async (req, res) => {
+    try {
+        let patient = await Patient.findById(req.body.data.id);
+        if(!patient){
+            return res.status(404).json({
+                success: false,
+                message: 'No user with found corresponding auth token'
+            });
+        }
+
+        let package = await Package.findById(req.params.packageId);
+        if(!package){
+            return res.status(404).json({
+                success: false,
+                message: 'No package with found corresponding auth token'
+            });
+        }
+
+        let data = {
+            name: package.name,
+            consultationsLeft: package.consultations,
+            createdAt: moment().format('DD-MM-YYYY'),
+            validTill: moment().add(package.validity, 'days')
+        }
+
+        patient['package'] = data;
+        console.log(patient);
+
+        const newPatient = await Patient.findById(patient.id);
+        newPatient.overwrite(patient);
+        await newPatient.save();
+
+        return res.status(200).json({
+            success: true,
+            data: newPatient
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
 
 // GET ALL APPOINTMENTS FOR A PATIENT
 router.get('/get-appointments', auth, async (req, res) => {

@@ -5,7 +5,13 @@ const PatientSchema = new mongoose.Schema({
     phone: String,
     email: String,
     gender: String,
-    age: Number
+    age: Number,
+    package: {
+        name: String,
+        consultationsLeft: Number,
+        createdAt: String,
+        validTill: String
+    }
 })
 
 module.exports = mongoose.model("patient", PatientSchema);
