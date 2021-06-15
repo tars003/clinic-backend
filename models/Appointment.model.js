@@ -4,18 +4,8 @@ const AppointmentSchema = mongoose.Schema({
     timeSlot: String,                                     // manual
     patientId: mongoose.Schema.Types.ObjectId,            // auto from auth token
     date: String,                                         // manual for now
-    name: String,                                         // manual for now
-    gender: String,                                       // manual for now
-    phone: String,                                        // manual for now
-    age: Number,                                          // manual for now
-    email: String,                                        // manual for now
-    problem: String,                                      // manual for now
     coupon: {
         type: String,
-        required: false
-    },
-    reports: {
-        type: [String],
         required: false
     },
     consultationStatus: {
@@ -33,7 +23,15 @@ const AppointmentSchema = mongoose.Schema({
     docId: {
         type: mongoose.Schema.Types.ObjectId,
         required: false
-    }
+    },
+    info: {
+        name: String,                                         // manual for now
+        gender: String,                                       // manual for now
+        phone: String,                                        // manual for now
+        age: Number,                                          // manual for now
+        email: String,                                        // manual for now
+        problem: String,                                      // manual for now
+    },
 })
 
 module.exports = mongoose.model("appointment", AppointmentSchema);

@@ -5,7 +5,6 @@ const router = Router();
 const Appointment = require('../models/Appointment.model');
 const Patient = require('../models/Patient.model.js');
 const Schedule = require('../models/Schedule.model');
-const Slot = require('../models/Slot.model');
 const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
 
