@@ -202,7 +202,7 @@ router.post('/get-invoice', auth, async(req, res) => {
 })
 
 // RETURN AVAILABLE SLOTS
-router.get('/get-slots/:date', auth, async(req, res) => {
+router.get('/create-slots/:date', auth, async(req, res) => {
     try {
         const schedule = await Schedule.findById(req.params.date);
         if(schedule) {
@@ -218,22 +218,56 @@ router.get('/get-slots/:date', auth, async(req, res) => {
             doctorData = doctorData[0];
             slotData = doctorData.slot;
             console.log(doctorData);
-            const slotsArr = generateSlots(
-                slotData.startTime,
-                slotData.endTime,
+            const slotsArr1 = generateSlots(
+                slotData.startTime1,
+                slotData.endTime1,
                 slotData.consultationTime,
                 slotData.gapTime,
                 req.params.date
             );
+            const slotsArr2 = generateSlots(
+                slotData.startTime2,
+                slotData.endTime2,
+                slotData.consultationTime,
+                slotData.gapTime,
+                req.params.date
+            );
+
             const schedule = await Schedule.create({
                 _id: req.params.date,
                 date: req.params.date,
-                slots : slotsArr
+                slots : slotsArr1.concat(slotsArr2)
             })
             console.log(schedule);
             return res.status(200).json({
                 success: true,
                 data: schedule
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
+// RETURN AVAILABLE SLOTS
+router.get('/get-slots/:date', auth, async(req, res) => {
+    try {
+        const schedule = await Schedule.findById(req.params.date);
+        if(schedule) {
+            console.log('Schedule exists')
+            return res.status(200).json({
+                success: true,
+                data: schedule
+            })
+        }
+        else {
+            return res.status(200).json({
+                success: true,
+                data: `No slots exist for ${req.params.date}`
             })
         }
     } catch(err) {
