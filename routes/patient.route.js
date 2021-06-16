@@ -12,6 +12,28 @@ const Package = require('../models/Package.model');
 
 const auth = require('../middleware/auth');
 
+const getDate = () => {
+    return moment()
+}
+
+// SEE ALL Packages Route
+router.get('/view-package', auth, async (req, res) => {
+    try {
+        const packages = await Package.find();
+
+        return res.status(200).json({
+            success: true,
+            data: packages
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 // ADD PACKAGE TO PATIENT
 router.get('/buy-package/:packageId', auth, async (req, res) => {
     try {
@@ -21,6 +43,22 @@ router.get('/buy-package/:packageId', auth, async (req, res) => {
                 success: false,
                 message: 'No user with found corresponding auth token'
             });
+        }
+
+        // If current package validity has not expired
+        if(patient.package){
+            let validTill = moment(Date.parse(patient.package.validTill));
+            let currDate = getDate();
+            console.log(currDate.diff(validTill));
+            if(currDate.diff(validTill) < 0){
+                return res.status(400).json({
+                    success: false,
+                    message: 'Patient already has an active package'
+                })
+            }
+            else {
+
+            }
         }
 
         let package = await Package.findById(req.params.packageId);
@@ -34,8 +72,8 @@ router.get('/buy-package/:packageId', auth, async (req, res) => {
         let data = {
             name: package.name,
             consultationsLeft: package.consultations,
-            createdAt: moment().format('DD-MM-YYYY'),
-            validTill: moment().add(package.validity, 'days')
+            createdAt: getDate().format('DD-MM-YYYY'),
+            validTill: getDate().add(package.validity, 'days')
         }
 
         patient['package'] = data;
