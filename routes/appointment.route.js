@@ -40,12 +40,12 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
                 if(slotArr.length > 0) {
                     var slotObj = slotArr[0];
                     // if the slot has already been booked
-                    // if(slotObj.booked) {
-                    //     return res.status(400).json({
-                    //         success: false,
-                    //         message: 'Slot is already booked, initiating a refund'
-                    //     })
-                    // }
+                    if(false) {
+                        return res.status(400).json({
+                            success: false,
+                            message: 'Slot is already booked, initiating a refund'
+                        })
+                    }
                     // if the slot is okay and not boooked
                     else {
                         // updating appointment payment status to COMPLETE
