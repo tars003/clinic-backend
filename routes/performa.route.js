@@ -45,21 +45,23 @@ router.get('/get-status', auth, async (req, res) => {
 // CREATE PERFORMA FOR PATIENT
 router.post('/set', auth, async (req, res) => {
     try {
-        // const patient = await Patient.findById(req.params.id);
+        const patient = await Patient.findById(req.params.id);
 
-        // let obj = req.body;
-        // obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
-        // console.log(obj);
-        // const newObj = obj.map((field) => {
-        //     if(field!='')
-        // })
-        // // const {
-        // //     name,
-        // //     age,
-        // //     email,
-        // //     gender,
-        // //     phone
-        // // } = obj;
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        console.log(obj);
+
+        var performaKeys = Object.keys(obj);
+        performaKeys = performaKeys.filter(i => i != "data");
+
+
+        // const {
+        //     name,
+        //     age,
+        //     email,
+        //     gender,
+        //     phone
+        // } = obj;
 
         return res.status(200).json({
             success: true,
