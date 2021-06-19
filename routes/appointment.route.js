@@ -224,7 +224,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                         return res.status(200).json({
                             success: true,
                             data: {
-                                id : appointment.id,
+                                _id : appointment.id,
                                 fees : appointment.fees
                             }
                         });
