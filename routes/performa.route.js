@@ -17,7 +17,7 @@ router.get('/get-status', auth, async (req, res) => {
     try {
         const patient = await Patient.findById(req.body.data.id);
         console.log(patient)
-        if(patient.performa){
+        if(patient.performa.length > 0){
             return res.status(200).json({
                 success: true,
                 data: {
@@ -42,14 +42,29 @@ router.get('/get-status', auth, async (req, res) => {
     }
 });
 
-// GET ROUTE FOR PATIENT
-router.get('/get/:id', auth, async (req, res) => {
+// CREATE PERFORMA FOR PATIENT
+router.post('/set', auth, async (req, res) => {
     try {
-        const patient = await Patient.findById(req.params.id);
+        // const patient = await Patient.findById(req.params.id);
+
+        // let obj = req.body;
+        // obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        // console.log(obj);
+        // const newObj = obj.map((field) => {
+        //     if(field!='')
+        // })
+        // // const {
+        // //     name,
+        // //     age,
+        // //     email,
+        // //     gender,
+        // //     phone
+        // // } = obj;
+
         return res.status(200).json({
             success: true,
             data: patient
-        })
+        });
     } catch(err) {
         console.log(err);
         return res.status(503).json({
@@ -58,6 +73,7 @@ router.get('/get/:id', auth, async (req, res) => {
         });
     }
 });
+
 
 
 

@@ -162,7 +162,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                         const appointment = await Appointment.create(appointmentData);
 
                         //  Updating day schedule for the slot to booked
-                        var daySchedule1 = await Schedule.findById(date);
+                        var daySchedule1 = await Schedule.findById(appointmentData.date);
                         console.log(daySchedule)
                         const newSchedule = daySchedule1.slots.map((slot) => {
                             var newSlot = slot;
