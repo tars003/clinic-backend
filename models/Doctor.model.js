@@ -14,6 +14,12 @@ const DoctorSchema = new mongoose.Schema({
         startTime3: String,
         endTime3: String
     },
+    performa: [
+        {
+            _id: String,
+            description:String
+        }
+    ],
     fee : Number
 })
 

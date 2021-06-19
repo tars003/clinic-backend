@@ -5,7 +5,8 @@ const PackageSchema = new mongoose.Schema({
     patientType: String,
     consultations: Number,
     validity: Number,
-    price: String,
+    price: Number,
+    isIndian : Boolean
 });
 
-module.exports = mongoose.model("basepackage", PackageSchema);
+module.exports = mongoose.model("packages", PackageSchema);

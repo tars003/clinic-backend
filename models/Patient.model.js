@@ -14,7 +14,7 @@ const PatientSchema = new mongoose.Schema({
     },
     performa: [
         {
-            label: String,
+            _id: String,
             value:String
         }
     ]

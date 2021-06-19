@@ -11,6 +11,27 @@ const auth = require('../middleware/auth');
 
 const generateSlots = require('../util/GenerateSlots');
 
+// GET ALL APPOINTMENTS FOR A PATIENT
+router.get('/get-appointments/:date', auth, async (req, res) => {
+    try {
+        const appointments = await Appointment.find({ date : req.params.date });
+        console.log(appointments);
+
+        return res.status(200).json({
+            success: true,
+            length: appointments.length,
+            data: appointments
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
 // CONFIRM PAYMENT STATUS OF APPOINTMENT
 router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
     try {
@@ -154,7 +175,28 @@ router.post('/get-invoice', auth, async(req, res) => {
                     // if the slot is free and good to go
                     else {
                         // calculating fees based on the coupon object retrieved from db
-                        const fee = doctorData.fee * (coupon.percentOff/100);
+                        var fee = doctorData.fee * (coupon.percentOff/100);
+
+                        // PACKAGE CONSULTATIONS UTILIZATION
+                        const patient = await Patient.findById(req.body.data.id);
+                        // If package exists
+                        if(patient.package){
+                            console.log(patient.package);
+                            var consultations = patient.package.consultationsLeft;
+                            // If his current package has some consultations left
+                            if(consultations > 0){
+                                console.log('inside consultations 0')
+                                fee = 0;
+                                patient.package.consultationsLeft = consultations - 1;
+                                console.log(patient);
+                                const newPatient = await Patient.findById(patient.id);
+                                newPatient.overwrite(patient);
+                                newPatient.save();
+                            }
+                        }
+
+
+                        // CREATING APPOINTMENT
                         // saving the payment status INCOMPLETE in db
                         appointmentData['fees'] = fee.toString();
                         appointmentData['coupon'] = coupon;
@@ -285,7 +327,10 @@ router.get('/get-slots/:date', auth, async(req, res) => {
         else {
             return res.status(200).json({
                 success: true,
-                data: []
+                data: {
+                    "_id" : req.params.date,
+                    "slots": []
+                }
             })
         }
     } catch(err) {

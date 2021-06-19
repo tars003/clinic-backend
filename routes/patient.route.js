@@ -20,7 +20,7 @@ const getDate = () => {
 router.get('/view-package', auth, async (req, res) => {
     try {
         const packages = await Package.find();
-
+        console.log(packages);
         return res.status(200).json({
             success: true,
             data: packages
@@ -69,14 +69,14 @@ router.get('/buy-package/:packageId', auth, async (req, res) => {
             let validTill = moment(Date.parse(patient.package.validTill));
             let currDate = getDate();
             console.log(currDate.diff(validTill));
-            if(currDate.diff(validTill) < 0){
+            if(patient.package.consultationsLeft <= 0) {
+                console.log('adding new package to patient, all consultation of current package used')
+            }
+            else if(currDate.diff(validTill) < 0 ){
                 return res.status(400).json({
                     success: false,
                     message: 'Patient already has an active package'
                 })
-            }
-            else {
-
             }
         }
 
