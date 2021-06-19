@@ -34,6 +34,25 @@ router.get('/view-package', auth, async (req, res) => {
     }
 });
 
+// GET PACKAGE OF A PATIENT
+router.get('/my-package', auth, async (req, res) => {
+    try {
+        const patient = await Patient.findById(req.body.data.id);
+
+        return res.status(200).json({
+            success: true,
+            data: patient.package
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
 // ADD PACKAGE TO PATIENT
 router.get('/buy-package/:packageId', auth, async (req, res) => {
     try {

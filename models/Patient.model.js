@@ -11,7 +11,13 @@ const PatientSchema = new mongoose.Schema({
         consultationsLeft: Number,
         createdAt: String,
         validTill: String
-    }
+    },
+    performa: [
+        {
+            label: String,
+            value:String
+        }
+    ]
 })
 
 module.exports = mongoose.model("patient", PatientSchema);

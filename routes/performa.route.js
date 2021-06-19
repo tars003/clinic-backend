@@ -12,6 +12,36 @@ const Package = require('../models/Package.model');
 
 const auth = require('../middleware/auth');
 
+// DOES PERFORMA EXISTS FOR A PATEINT
+router.get('/get-status', auth, async (req, res) => {
+    try {
+        const patient = await Patient.findById(req.body.data.id);
+        console.log(patient)
+        if(patient.performa){
+            return res.status(200).json({
+                success: true,
+                data: {
+                    performaExists: true
+                }
+            })
+        }
+        else {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    performaExists: false
+                }
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 // GET ROUTE FOR PATIENT
 router.get('/get/:id', auth, async (req, res) => {
     try {
