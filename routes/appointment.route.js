@@ -11,6 +11,133 @@ const auth = require('../middleware/auth');
 
 const generateSlots = require('../util/GenerateSlots');
 
+// RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
+router.post('/reschedule', auth, async(req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            appointmentId,
+            newDate,
+            newSlot
+        } = obj;
+
+        var oldDate = '';
+        var oldSlot = '';
+
+        const daySchedule = await Schedule.findById(newDate);
+        //  Schedule for the date in request exists
+        if(daySchedule) {
+            const checkSlot = (slot) => {
+                return slot.slot == newSlot
+            }
+            var slotArr = daySchedule.slots.filter(checkSlot);
+            // Slots array does exist for the schedule of the date in request
+            // Also checks that slot present in request does agree with the given day's schedule
+            if(slotArr.length >= 1) {
+                var slotObj = slotArr[0]
+                // if the slot is already booked by another payment complete appointment
+                if(slotObj.booked) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Slot is already booked'
+                    })
+                }
+                // if the slot is free and good to go
+                else {
+                    // CREATING APPOINTMENT
+                    // saving the payment status INCOMPLETE in db
+                    let appointment = await Appointment.findById(appointmentId);
+                    if(!appointment){
+                        return res.stats(400).json({
+                            success: false,
+                            message: 'appointment Id invalid'
+                        })
+                    }
+                    oldDate = appointment.date;
+                    oldSlot = appointment.timeSlot;
+                    appointment['date'] = newDate;
+                    appointment['timeSlot'] = newSlot;
+                    // console.log('appointment');
+                    // console.log(appointment);
+
+                    let newAppointment = await Appointment.findById(appointmentId);
+                    newAppointment.overwrite(appointment);
+                    // console.log('newAppointment');
+                    // console.log(newAppointment);
+                    newAppointment.save();
+
+                    //  Updating day schedule for the slot to booked
+                    var daySchedule1 = await Schedule.findById(newDate);
+                    const newSchedule = daySchedule1.slots.map((slot) => {
+                        var newSlot1 = slot;
+                        if(slot.slot == newSlot) {
+                            newSlot1.booked = true;
+                            return newSlot1;
+                        }
+                        else {
+                            return newSlot1;
+                        }
+                    })
+                    daySchedule1['slots'] = newSchedule;
+                    daySchedule1.overwrite(daySchedule1);
+                    // console.log('newSchedule');
+                    // console.log(daySchedule1);
+                    daySchedule1.save();
+
+                    //  DELETING OLD SCHEDULE ENTRY
+                    var daySchedule2 = await Schedule.findById(oldDate);
+                    const newSchedule2 = daySchedule2.slots.map((slot) => {
+                        var oldSlot1 = slot;
+                        if(slot.slot == oldSlot) {
+                            oldSlot1.booked = false;
+                            return oldSlot1;
+                        }
+                        else {
+                            return oldSlot1;
+                        }
+                    })
+                    daySchedule2['slots'] = newSchedule2
+                    daySchedule2.overwrite(daySchedule2);
+                    // console.log('oldSchedule');
+                    // console.log(daySchedule2);
+                    daySchedule2.save();
+
+
+
+                    return res.status(200).json({
+                        success: true,
+                        data: newAppointment
+                    });
+                }
+            }
+            // no slot found in the given day's schedule as slot supplied in request
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'Time slot not valid'
+                })
+            }
+        }
+        // Schedule for the date in request does not exist
+        else {
+            return res.status(400).json({
+                success: false,
+                message: 'Schedule not found for this date'
+            })
+        }
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
+
+
 // GET ALL APPOINTMENTS FOR A PATIENT
 router.get('/get-appointments/:date', auth, async (req, res) => {
     try {

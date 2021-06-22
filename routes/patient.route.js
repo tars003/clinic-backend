@@ -190,7 +190,7 @@ router.post('/create', async (req, res) => {
         } = obj;
 
         const tempProfile = await Patient.findOne({ phone });
-        console.log(tempProfile)
+        console.log(tempProfile);
         if(tempProfile){
             return res.status(409).json({
                 success: false,
