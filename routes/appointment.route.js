@@ -1,5 +1,6 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
+const moment = require('moment');
 const router = Router();
 
 const Appointment = require('../models/Appointment.model');
@@ -10,6 +11,23 @@ const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 
 const generateSlots = require('../util/GenerateSlots');
+
+const getDate = () => {
+    return moment()
+};
+
+const cancelTime = 720;
+const rescheduleTime = 2400;
+
+const getAppTime = (date, slot) => {
+    const startTime = slot.split(' - ')[0];
+    let appointmentTime = moment(
+        `${date} ${startTime}`,
+        'DD-MM-YYYY HH:mm'
+    );
+    return appointmentTime;
+}
+
 
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
 router.post('/reschedule', auth, async(req, res) => {
@@ -54,7 +72,22 @@ router.post('/reschedule', auth, async(req, res) => {
                             success: false,
                             message: 'appointment Id invalid'
                         })
+                    };
+
+                    // CHECKING IF APPOINTMENT IS RESCHEDULABLE
+                    let currDate = getDate();
+                    let appointmentTime = getAppTime(appointment.date, appointment.timeSlot);
+                    const diffMins = appointmentTime.diff(currDate, 'minutes');
+                    console.log(diffMins);
+                    console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
+                    console.log(currDate.format('DD-MM-YYYY HH:mm'));
+                    if(diffMins < rescheduleTime){
+                        return res.status(400).json({
+                            success: false,
+                            message: 'time period for reschedule is closed'
+                        })
                     }
+
                     oldDate = appointment.date;
                     oldSlot = appointment.timeSlot;
                     appointment['date'] = newDate;
@@ -66,7 +99,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     newAppointment.overwrite(appointment);
                     // console.log('newAppointment');
                     // console.log(newAppointment);
-                    newAppointment.save();
+                    // newAppointment.save();
 
                     //  Updating day schedule for the slot to booked
                     var daySchedule1 = await Schedule.findById(newDate);
@@ -84,7 +117,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     daySchedule1.overwrite(daySchedule1);
                     // console.log('newSchedule');
                     // console.log(daySchedule1);
-                    daySchedule1.save();
+                    // daySchedule1.save();
 
                     //  DELETING OLD SCHEDULE ENTRY
                     var daySchedule2 = await Schedule.findById(oldDate);
@@ -102,7 +135,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     daySchedule2.overwrite(daySchedule2);
                     // console.log('oldSchedule');
                     // console.log(daySchedule2);
-                    daySchedule2.save();
+                    // daySchedule2.save();
 
 
 
@@ -127,6 +160,68 @@ router.post('/reschedule', auth, async(req, res) => {
                 message: 'Schedule not found for this date'
             })
         }
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
+// RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
+router.get('/cancel/:appointmentId', auth, async(req, res) => {
+    try {
+
+        // CREATING APPOINTMENT
+        // saving the payment status INCOMPLETE in db
+        let appointment = await Appointment.findById(req.params.appointmentId);
+        if(!appointment){
+            return res.status(400).json({
+                success: false,
+                message: 'appointment Id invalid'
+            })
+        };
+
+        // CHECKING IF APPOINTMENT IS RESCHEDULABLE
+        let currDate = getDate();
+        let appointmentTime = getAppTime(appointment.date, appointment.timeSlot);
+        const diffMins = appointmentTime.diff(currDate, 'minutes');
+        console.log(diffMins);
+        console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
+        console.log(currDate.format('DD-MM-YYYY HH:mm'));
+        if(diffMins < cancelTime){
+            return res.status(400).json({
+                success: false,
+                message: 'time period for cancellation is closed'
+            })
+        }
+
+
+        let newAppointment = await Appointment.findByIdAndRemove(req.params.    appointmentId);
+
+
+        //  Updating day schedule for the slot to booked
+        var daySchedule1 = await Schedule.findById(appointment.date);
+        const newSchedule = daySchedule1.slots.map((slot) => {
+            var newSlot1 = slot;
+            if(slot.slot == appointment.timeSlot) {
+                newSlot1.booked = false;
+                return newSlot1;
+            }
+            else {
+                return newSlot1;
+            }
+        })
+        daySchedule1['slots'] = newSchedule;
+        daySchedule1.overwrite(daySchedule1);
+        // console.log(daySchedule1);
+        daySchedule1.save();
+
+        return res.status(200).json({
+            success: true,
+            data: newAppointment
+        });
     } catch(err) {
         console.log(err);
         res.status(503).json({
