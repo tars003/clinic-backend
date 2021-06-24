@@ -99,7 +99,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     newAppointment.overwrite(appointment);
                     // console.log('newAppointment');
                     // console.log(newAppointment);
-                    // newAppointment.save();
+                    newAppointment.save();
 
                     //  Updating day schedule for the slot to booked
                     var daySchedule1 = await Schedule.findById(newDate);
@@ -117,7 +117,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     daySchedule1.overwrite(daySchedule1);
                     // console.log('newSchedule');
                     // console.log(daySchedule1);
-                    // daySchedule1.save();
+                    daySchedule1.save();
 
                     //  DELETING OLD SCHEDULE ENTRY
                     var daySchedule2 = await Schedule.findById(oldDate);
@@ -135,7 +135,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     daySchedule2.overwrite(daySchedule2);
                     // console.log('oldSchedule');
                     // console.log(daySchedule2);
-                    // daySchedule2.save();
+                    daySchedule2.save();
 
 
 
