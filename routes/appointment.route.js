@@ -17,7 +17,7 @@ const getDate = () => {
 };
 
 const cancelTime = 720;
-const rescheduleTime = 2400;
+const rescheduleTime = 240;
 
 const getAppTime = (date, slot) => {
     const startTime = slot.split(' - ')[0];
