@@ -13,6 +13,7 @@ app.use("/patient", require('./routes/patient.route'));
 app.use("/performa", require('./routes/performa.route'));
 app.use("/appointment", require('./routes/appointment.route'));
 app.use("/profile", require('./routes/profile.route'));
+app.use("/package", require('./routes/package.route'));
 
 const PORT = process.env.PORT || 5000;
 

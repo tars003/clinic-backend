@@ -24,14 +24,12 @@ const PatientSchema = new mongoose.Schema({
             name: String,
             gender: String,
             age: Number,
-            package: [
-                {
-                    name: String,
-                    consultationsLeft: Number,
-                    createdAt: String,
-                    validTill: String
-                }
-            ],
+            package: {
+                name: String,
+                consultationsLeft: Number,
+                createdAt: String,
+                validTill: String
+            },
             performa: [
                 {
                     _id: String,
