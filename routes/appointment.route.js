@@ -396,9 +396,6 @@ router.post('/get-invoice', auth, async(req, res) => {
                     }
                     // if the slot is free and good to go
                     else {
-                        // calculating fees based on the coupon object retrieved from db
-                        var fee = doctorData.fee * (coupon.percentOff/100);
-
                         // PACKAGE CONSULTATIONS UTILIZATION
                         const patient = await Patient.findById(req.body.data.id);
                         // If package exists
@@ -416,12 +413,29 @@ router.post('/get-invoice', auth, async(req, res) => {
                                 newPatient.save();
                             }
                         }
+                        let info = {};
+                        if(req.body.data['profile']) {
+                            info = {
+                                name: req.body.data['profile']['name'],
+                                age: req.body.data['profile']['age'],
+                                gender: req.body.data['profile']['gender']
+                            }
+                        }
+                        else {
+                            info = {
+                                name: patient.name,
+                                age: patient.age,
+                                gender: patient.gender
+                            }
+                        }
 
-
+                        // calculating fees based on the coupon object retrieved from db
+                        var fee = doctorData.fee * (coupon.percentOff/100);
                         // CREATING APPOINTMENT
                         // saving the payment status INCOMPLETE in db
                         appointmentData['fees'] = fee.toString();
                         appointmentData['coupon'] = coupon;
+                        appointmentData['info'] = info;
                         delete appointmentData.data;
                         const appointment = await Appointment.create(appointmentData);
 
@@ -439,7 +453,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                             }
                         })
                         daySchedule1['slots'] = newSchedule
-                        // console.log(daySchedule1);
+                        console.log(daySchedule1);
                         daySchedule1.overwrite(daySchedule1);
                         daySchedule1.save();
 
