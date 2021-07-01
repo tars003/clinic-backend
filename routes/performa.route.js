@@ -12,12 +12,11 @@ const Package = require('../models/Package.model');
 
 const auth = require('../middleware/auth');
 
-// CREATE PERFORMA FOR PATIENT
+// CREATE PERFORMA STRUCTURE FOR A DOCTOR
 router.post('/create', auth, async (req, res) => {
     try {
         var doctor = await Doctor.find();
         doctor = doctor[0];
-
 
         let obj = req.body;
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
@@ -56,7 +55,7 @@ router.post('/create', auth, async (req, res) => {
     }
 });
 
-// GET PERFORMA STRUCTURE
+// GET PERFORMA STRUCTURE OF A DOCTOR
 router.get('/get-performa-struct', auth, async (req, res) => {
     try {
         var doctor = await Doctor.find();
@@ -146,7 +145,7 @@ router.post('/set', auth, async (req, res) => {
 });
 
 
-// DOES PERFORMA EXISTS FOR A PATEINT
+// GET PATIENT'S PERFORMA
 router.get('/get-performa', auth, async (req, res) => {
     try {
         const patient = await Patient.findById(req.body.data.id);

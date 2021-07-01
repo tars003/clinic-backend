@@ -38,10 +38,19 @@ router.get('/view-package', auth, async (req, res) => {
 router.get('/my-package', auth, async (req, res) => {
     try {
         const patient = await Patient.findById(req.body.data.id);
-
+        const patientData = {
+            "_id": patient.id,
+            "name": patient.name,
+            "age": patient.age,
+            "gender": patient.gender,
+            "package": patient.package
+        }
         return res.status(200).json({
             success: true,
-            data: patient.package
+            data: [
+                patientData,
+                ...patient.profiles
+            ]
         });
     } catch(err) {
         console.log(err);
