@@ -55,14 +55,23 @@ router.post('/add', auth, async (req, res) => {
     }
 });
 
-// ADD PROFILE
+// GET ALL PROFILES
 router.get('/get', auth, async (req, res) => {
     try {
         let patient = await Patient.findById(req.body.data.id);
 
         return res.status(201).json({
             success: true,
-            data: patient.profiles,
+            count: patient.profiles.length + 1,
+            data: [
+                {
+                    "_id": patient.id,
+                    "name": patient.name,
+                    "age": patient.age,
+                    "gender": patient.gender
+                },
+                ...patient.profiles
+            ],
         })
     } catch(err) {
         console.log(err);

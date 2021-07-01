@@ -398,39 +398,73 @@ router.post('/get-invoice', auth, async(req, res) => {
                     else {
                         // PACKAGE CONSULTATIONS UTILIZATION
                         const patient = await Patient.findById(req.body.data.id);
-                        // If package exists
-                        if(patient.package){
-                            console.log(patient.package);
-                            var consultations = patient.package.consultationsLeft;
-                            // If his current package has some consultations left
-                            if(consultations > 0){
-                                console.log('inside consultations 0')
-                                fee = 0;
-                                patient.package.consultationsLeft = consultations - 1;
-                                console.log(patient);
-                                const newPatient = await Patient.findById(patient.id);
-                                newPatient.overwrite(patient);
-                                newPatient.save();
-                            }
-                        }
-                        let info = {};
-                        if(req.body.data['profile']) {
+                        // calculating fees based on the coupon object retrieved from db
+                        var fee = doctorData.fee * (coupon.percentOff/100);
+
+                        var info = {};
+                        console.log(req.body);
+                        if(req.body['info']) {
                             info = {
-                                name: req.body.data['profile']['name'],
-                                age: req.body.data['profile']['age'],
-                                gender: req.body.data['profile']['gender']
+                                id: req.body['info']['id'],
+                                name: req.body['info']['name'],
+                                age: req.body['info']['age'],
+                                gender: req.body['info']['gender']
+                            };
+                            const profile = patient.profiles.filter((profile) => profile.id ==req.body['info']['id'])[0];
+                            console.log('profile');
+                            console.log(profile);
+
+                            if(profile.package){
+                                console.log(profile.package);
+                                var consultations = profile.package.consultationsLeft;
+                                // If his current package has some consultations left
+                                if(consultations > 0){
+                                    console.log('inside consultations 0')
+                                    fee = 0;
+                                    profile.package.consultationsLeft = consultations - 1;
+                                    console.log(profile);
+
+                                    // saving new consultation count in patient profile arr
+
+                                    let profileArr = patient.profiles.map((profilePrev) => {
+                                        if(profilePrev.id == profile.id) return profile;
+                                        else return profilePrev;
+                                    });
+                                    patient.profiles = profileArr;
+                                    console.log(patient);
+
+                                    const newPatient = await Patient.findById(patient.id);
+                                    newPatient.overwrite(patient);
+                                    newPatient.save();
+                                }
                             }
                         }
                         else {
                             info = {
+                                id: patient.id,
                                 name: patient.name,
                                 age: patient.age,
                                 gender: patient.gender
                             }
+                            // If package exists
+                            if(patient.package){
+                                console.log(patient.package);
+                                var consultations = patient.package.consultationsLeft;
+                                // If his current package has some consultations left
+                                if(consultations > 0){
+                                    console.log('inside consultations 0')
+                                    fee = 0;
+                                    patient.package.consultationsLeft = consultations - 1;
+                                    console.log(patient);
+                                    const newPatient = await Patient.findById(patient.id);
+                                    newPatient.overwrite(patient);
+                                    newPatient.save();
+                                }
+                            }
                         }
 
-                        // calculating fees based on the coupon object retrieved from db
-                        var fee = doctorData.fee * (coupon.percentOff/100);
+                        // console.log(info);
+
                         // CREATING APPOINTMENT
                         // saving the payment status INCOMPLETE in db
                         appointmentData['fees'] = fee.toString();
@@ -441,7 +475,7 @@ router.post('/get-invoice', auth, async(req, res) => {
 
                         //  Updating day schedule for the slot to booked
                         var daySchedule1 = await Schedule.findById(appointmentData.date);
-                        console.log(daySchedule)
+                        // console.log(daySchedule);
                         const newSchedule = daySchedule1.slots.map((slot) => {
                             var newSlot = slot;
                             if(slot.slot == appointment.timeSlot) {
@@ -453,7 +487,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                             }
                         })
                         daySchedule1['slots'] = newSchedule
-                        console.log(daySchedule1);
+                        // console.log(daySchedule1);
                         daySchedule1.overwrite(daySchedule1);
                         daySchedule1.save();
 

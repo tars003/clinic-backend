@@ -25,6 +25,7 @@ const AppointmentSchema = mongoose.Schema({
         required: false
     },
     info: {
+        id: String,
         name: String,
         gender: String,
         age: Number
