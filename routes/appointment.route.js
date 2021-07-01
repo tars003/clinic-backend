@@ -404,63 +404,73 @@ router.post('/get-invoice', auth, async(req, res) => {
                         var info = {};
                         console.log(req.body);
                         if(req.body['info']) {
-                            info = {
-                                id: req.body['info']['id'],
-                                name: req.body['info']['name'],
-                                age: req.body['info']['age'],
-                                gender: req.body['info']['gender']
-                            };
-                            const profile = patient.profiles.filter((profile) => profile.id ==req.body['info']['id'])[0];
-                            console.log('profile');
-                            console.log(profile);
 
-                            if(profile.package){
-                                console.log(profile.package);
-                                var consultations = profile.package.consultationsLeft;
-                                // If his current package has some consultations left
-                                if(consultations > 0){
-                                    console.log('inside consultations 0')
-                                    fee = 0;
-                                    profile.package.consultationsLeft = consultations - 1;
-                                    console.log(profile);
 
-                                    // saving new consultation count in patient profile arr
+                            if(req.body['info']['id'] == patient.id) {
+                                info = {
+                                    id: patient.id,
+                                    name: patient.name,
+                                    age: patient.age,
+                                    gender: patient.gender
+                                }
+                                // If package exists
+                                if(patient.package){
+                                    console.log(patient.package);
+                                    var consultations = patient.package.consultationsLeft;
+                                    // If his current package has some consultations left
+                                    if(consultations > 0){
+                                        console.log('inside consultations 0')
+                                        fee = 0;
+                                        patient.package.consultationsLeft = consultations - 1;
+                                        console.log(patient);
+                                        const newPatient = await Patient.findById(patient.id);
+                                        newPatient.overwrite(patient);
+                                        newPatient.save();
+                                    }
+                                }
+                            }
+                            else {
+                                info = {
+                                    id: req.body['info']['id'],
+                                    name: req.body['info']['name'],
+                                    age: req.body['info']['age'],
+                                    gender: req.body['info']['gender']
+                                };
+                                const profile = patient.profiles.filter((profile) => profile.id ==req.body['info']['id'])[0];
+                                console.log('profile');
+                                console.log(profile);
 
-                                    let profileArr = patient.profiles.map((profilePrev) => {
-                                        if(profilePrev.id == profile.id) return profile;
-                                        else return profilePrev;
-                                    });
-                                    patient.profiles = profileArr;
-                                    console.log(patient);
+                                if(profile.package){
+                                    console.log(profile.package);
+                                    var consultations = profile.package.consultationsLeft;
+                                    // If his current package has some consultations left
+                                    if(consultations > 0){
+                                        console.log('inside consultations 0')
+                                        fee = 0;
+                                        profile.package.consultationsLeft = consultations - 1;
+                                        console.log(profile);
 
-                                    const newPatient = await Patient.findById(patient.id);
-                                    newPatient.overwrite(patient);
-                                    newPatient.save();
+                                        // saving new consultation count in patient profile arr
+
+                                        let profileArr = patient.profiles.map((profilePrev) => {
+                                            if(profilePrev.id == profile.id) return profile;
+                                            else return profilePrev;
+                                        });
+                                        patient.profiles = profileArr;
+                                        console.log(patient);
+
+                                        const newPatient = await Patient.findById(patient.id);
+                                        newPatient.overwrite(patient);
+                                        newPatient.save();
+                                    }
                                 }
                             }
                         }
                         else {
-                            info = {
-                                id: patient.id,
-                                name: patient.name,
-                                age: patient.age,
-                                gender: patient.gender
-                            }
-                            // If package exists
-                            if(patient.package){
-                                console.log(patient.package);
-                                var consultations = patient.package.consultationsLeft;
-                                // If his current package has some consultations left
-                                if(consultations > 0){
-                                    console.log('inside consultations 0')
-                                    fee = 0;
-                                    patient.package.consultationsLeft = consultations - 1;
-                                    console.log(patient);
-                                    const newPatient = await Patient.findById(patient.id);
-                                    newPatient.overwrite(patient);
-                                    newPatient.save();
-                                }
-                            }
+                                return res.status(400).json({
+                                    success: false,
+                                    message: 'no profile info found'
+                                })
                         }
 
                         // console.log(info);

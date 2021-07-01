@@ -74,12 +74,20 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
         }
         let profile, packageInitial;
         if(req.body.profileId){
-            profile = patient.profiles.filter((profile) => profile.id == req.body.profileId);
-            console.log(profile[0]);
-            packageInitial = profile[0].package;
+            if(req.body.profileId == patient.id){
+                packageInitial = patient.package;
+            }
+            else {
+                profile = patient.profiles.filter((profile) => profile.id == req.body.profileId);
+                console.log(profile[0]);
+                packageInitial = profile[0].package;
+            }
         }
         else {
-            packageInitial = patient.package;
+            return res.status(400).json({
+                success: false,
+                message: "No profile id found"
+            })
         }
 
         // If current package validity has not expired
