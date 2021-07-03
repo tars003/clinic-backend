@@ -294,31 +294,13 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
                         // updating appointment payment status to COMPLETE
                         var appointment = await Appointment.findById(appointmentId);
                         appointment['paymentStatus'] = 'COMPLETE';
-                        appointment.overwrite(appointment);
-                        await appointment.save();
-
-                        // //  Updating day schedule for the slot to booked
-                        // var daySchedule1 = await Schedule.findById(date);
-                        // console.log(daySchedule)
-                        // const newSchedule = daySchedule1.slots.map((slot) => {
-                        //     var newSlot = slot;
-                        //     if(slot.slot == appointment.timeSlot) {
-                        //         newSlot.booked = true;
-                        //         return newSlot;
-                        //     }
-                        //     else {
-                        //         return newSlot;
-                        //     }
-                        // })
-                        // daySchedule1['slots'] = newSchedule
-                        // // console.log(daySchedule1);
-                        // daySchedule1.overwrite(daySchedule1);
-                        // daySchedule1.save();
-
+                        var newAppointment = await Appointment.findById(appointmentId);
+                        newAppointment.overwrite(appointment);
+                        await newAppointment.save();
                         return res.status(200).json({
                             success: true,
                             message: 'Appointment confirmed',
-                            data: appointment
+                            data: newAppointment
                         })
                     }
                 }
