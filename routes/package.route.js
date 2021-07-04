@@ -121,7 +121,7 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
             validTill: getDate().add(package.validity, 'days')
         }
 
-        if(req.body.profileId){
+        if(req.body.profileId != patient.id){
 
             let profileArr = patient.profiles.map(profile => {
                 if(profile.id == req.body.profileId){
