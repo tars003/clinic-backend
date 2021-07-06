@@ -76,6 +76,38 @@ router.get('/get-token/:phone', async (req, res) => {
     }
 });
 
+// INITIAL TOKEN ROUTE FOR PATIENT
+router.get('/get-token/email/:email', async (req, res) => {
+    try {
+        let patient = await Patient.findOne({ email: req.params.email });
+        if(!patient){
+            return res.status(404).json({
+                success: false,
+                message: 'No user with found corresponding to given contact number !'
+            });
+        }
+        const tokenPayload = {
+            data: {
+                id: patient.id
+            }
+        }
+        const token = jwt.sign(tokenPayload, process.env.JWT_SECRET);
+        console.log(`Requested token : ${token}`);
+        return res.status(200).json({
+            success: true,
+            token,
+            data: patient
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
 // CREATE ROUTE FOR PATIENT
 router.post('/create', async (req, res) => {
     try {
@@ -130,11 +162,128 @@ router.post('/create', async (req, res) => {
     }
 });
 
+// CREATE ROUTE FOR PATIENT via EMAIL
+router.post('/create/email', async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj)
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            name,
+            age,
+            email,
+            gender,
+            phone,
+            isIndian,
+        } = obj;
+
+        const tempProfile = await Patient.findOne({ email });
+        console.log(tempProfile);
+        if(tempProfile){
+            return res.status(409).json({
+                success: false,
+                message: 'Patient profile already exists'
+            })
+        }
+        else {
+            const patient = await Patient.create({
+                name,
+                phone,
+                email,
+                gender,
+                age,
+                isIndian
+            });
+            const payload = {
+                data: {
+                  id: patient.id,
+                },
+            };
+            const token = jwt.sign(payload, process.env.JWT_SECRET);
+            return res.status(201).json({
+                success: true,
+                data: patient,
+                token
+            })
+        }
+
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 // UPDATE ROUTE FOR PATIENT
 router.post('/update', auth, async (req, res) => {
-        try {
+    try {
+        let obj = req.body;
+        // console.log(obj)
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            id,
+            name,
+            age,
+            gender,
+        } = obj;
 
+        let tempProfile = await Patient.findById( req.body.data.id );
 
+        if(tempProfile){
+            if(id == tempProfile.id) {
+                tempProfile['name'] = name;
+                tempProfile['age'] = age;
+                tempProfile['gender'] = gender;
+                const newProfile = await Patient.findById(tempProfile.id);
+                newProfile.overwrite(tempProfile);
+                newProfile.save();
+
+                return res.status(200).json({
+                    success: true,
+                    data: newProfile
+                });
+            }
+            else {
+                let profileArr = tempProfile.profiles;
+                let isFound = false;
+                profileArr = profileArr.map(profile => {
+                    if(profile.id == id){
+                        profile['name'] = name;
+                        profile['age'] = age;
+                        profile['gender'] = gender;
+                        isFound = true;
+                    }
+                    return profile;
+                });
+
+                // Checking if any sub id was found
+                if(!isFound){
+                    return res.status(400).json({
+                        success: false,
+                        message: 'No sub profile found'
+                    })
+                }
+
+                tempProfile['profiles'] = profileArr;
+                console.log(tempProfile)
+                const newProfile = await Patient.findById(tempProfile.id);
+                newProfile.overwrite(tempProfile);
+                newProfile.save();
+
+                return res.status(200).json({
+                    success: true,
+                    data: newProfile
+                })
+            }
+        }
+        else {
+            return res.status(400).json({
+                success: true,
+                message: 'np user found for given token'
+            })
+        }
 
     } catch(err) {
         console.log(err);

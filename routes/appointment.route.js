@@ -341,6 +341,8 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
 router.post('/get-invoice', auth, async(req, res) => {
     try {
         var appointmentData = req.body;
+        console.log('appointmentData');
+        console.log(appointmentData);
         // Getting first doctor from the collection
         var doctorData = await Doctor.find();
         doctorData = doctorData[0];

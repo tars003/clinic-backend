@@ -4,7 +4,7 @@ const Patient = require("../models/Patient.model");
 
 module.exports = async function (req, res, next) {
   const token = req.get("auth-token");
-
+  console.log(token);
   if(token) {
     // console.log(token);
     const { data } = jwt.verify(token, process.env.JWT_SECRET);
@@ -15,6 +15,7 @@ module.exports = async function (req, res, next) {
     }
     else {
       let user = await Patient.findById(id);
+      // console.log(user);
       // If User is found
       if (user) {
         // console.log(user);
