@@ -18,7 +18,7 @@ module.exports = async function (req, res, next) {
       // console.log(user);
       // If User is found
       if (user) {
-        // console.log(user);
+        console.log(user);
         req.body.data = user;
         next();
       }

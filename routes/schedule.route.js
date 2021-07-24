@@ -19,6 +19,47 @@ const getDate = () => {
 };
 
 
+// RETURN SCHEDULE CREATED STATUS FOR A MONTH
+// DATE FORMAT = 'DD-MM-YYYY' ; 01-05-2000
+router.get('/get/schedule-month/:date', auth, async(req, res) => {
+    try {
+        var a = moment(req.params.date, 'DD-MM-YYYY');
+        var b = moment(req.params.date, 'DD-MM-YYYY');
+        var c = moment(req.params.date, 'DD-MM-YYYY');
+        c.subtract(1, 'd');
+        b.add(1, 'M');
+        var days = b.diff(a, 'd');
+        var resArr = []
+        for(let i=0; i<days; i++) {
+            const qDate = c.add(1, 'd').format('DD-MM-YYYY');
+            const schedule = await Schedule.findById(qDate);
+            if(schedule) {
+                resArr.push({
+                    date: qDate,
+                    exists: true
+                })
+            } else {
+                resArr.push({
+                    date: qDate,
+                    exists: false
+                })
+            }
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: resArr
+        })
+
+    } catch(err) {
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
 // RETURN AVAILABLE SLOTS
 router.get('/get-slots/:date', auth, async(req, res) => {
     try {

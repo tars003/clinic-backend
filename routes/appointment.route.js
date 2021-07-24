@@ -28,6 +28,34 @@ const getAppTime = (date, slot) => {
     return appointmentTime;
 }
 
+// GET ALL PAST APPOINTMENTS FOR A PATIENT
+router.get('/get/past-appointments', auth, async(req, res) => {
+    try {
+        let patient = await Patient.findById(req.body.data.id);
+        // console.log(patient)
+        let appointments = await Appointment.find({ patientId: patient.id })
+
+        if(patient){
+            return res.status(200).json({
+                success: true,
+                length: appointments.length,
+                data: appointments
+            });
+        } else {
+            return res.status(404).json({
+                success: false,
+                message: 'patient not found'
+            });
+        }
+    } catch (err){
+        console.log(err);
+        res.status(503).json({
+            sucess: false,
+            message: 'Server error'
+        })
+    }
+})
+
 
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
 router.post('/reschedule', auth, async(req, res) => {
