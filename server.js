@@ -15,6 +15,7 @@ app.use("/appointment", require('./routes/appointment.route'));
 app.use("/profile", require('./routes/profile.route'));
 app.use("/package", require('./routes/package.route'));
 app.use("/schedule", require('./routes/schedule.route'));
+app.use("/doctor", require('./routes/doctor.route'));
 
 const PORT = process.env.PORT || 5000;
 
