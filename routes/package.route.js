@@ -16,6 +16,112 @@ const getDate = () => {
     return moment()
 }
 
+// CREATE A PACKAGE
+router.post('/create', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            name,
+            patientType,
+            description,
+            consultations,
+            validity,
+            price,
+            isIndian
+        } = obj;
+
+        let package = await Package.create({
+            name,
+            patientType,
+            description,
+            consultations,
+            validity,
+            price,
+            isIndian
+        });
+
+        return res.status(200).json({
+            success: true,
+            data: package
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+// CREATE A PACKAGE
+router.post('/edit/:id', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            name,
+            patientType,
+            description,
+            consultations,
+            validity,
+            price,
+            isIndian
+        } = obj;
+
+        let package = await Package.findById(req.params.id);
+
+        package[name]= name || package.name;
+        package[patientType]= patientType || package.patientType;
+        package[description]= description || package.description;
+        package[consultations]= consultations || package.consultations;
+        package[validity]= validity || package.validity;
+        package[price]= price || package.price;
+        package[isIndian]= isIndian || package.isIndia;
+
+        console.log(package);
+
+        const newPackage = await Package.findById(package.id);
+        newPackage.overwrite(package);
+        await newPackage.save()
+
+        return res.status(200).json({
+            success: true,
+            data: newPackage
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+// REMOVE A PACKAGE
+router.get('/remove/:id', auth, async(req, res) => {
+    try {
+        const package = await Package.findById(req.params.id);
+        // console.log(packages);
+        await package.remove();
+        return res.status(200).json({
+            success: true,
+            message: 'package removed'
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
+
+
 // SEE ALL Packages Route
 router.get('/view-package', auth, async (req, res) => {
     try {
@@ -23,6 +129,7 @@ router.get('/view-package', auth, async (req, res) => {
         console.log(packages);
         return res.status(200).json({
             success: true,
+            length: packages.length,
             data: packages
         });
     } catch(err) {
