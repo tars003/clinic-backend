@@ -4,6 +4,19 @@ const DoctorSchema = new mongoose.Schema({
     name: String,
     phone: String,
     email: String,
+    services: String,
+    awards: String,
+    registration: String,
+    degree: {
+        degree1: String,
+        degree2: String,
+        degree3: String
+    },
+    experience: {
+        experience1: String,
+        experience2: String,
+        experience3: String
+    },
     slot1: {
         consultationTime: Number,
         gapTime: Number,

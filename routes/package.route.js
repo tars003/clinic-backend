@@ -59,6 +59,7 @@ router.post('/create', auth, async (req, res) => {
 router.post('/edit/:id', auth, async (req, res) => {
     try {
         let obj = req.body;
+        console.log('Incoming object');
         console.log(obj);
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         const {
@@ -73,14 +74,15 @@ router.post('/edit/:id', auth, async (req, res) => {
 
         let package = await Package.findById(req.params.id);
 
-        package[name]= name || package.name;
-        package[patientType]= patientType || package.patientType;
-        package[description]= description || package.description;
-        package[consultations]= consultations || package.consultations;
-        package[validity]= validity || package.validity;
-        package[price]= price || package.price;
-        package[isIndian]= isIndian || package.isIndia;
+        package['name']= name || package.name;
+        package['patientType']= patientType || package.patientType;
+        package['description']= description || package.description;
+        package['consultations']= consultations || package.consultations;
+        package['validity']= validity || package.validity;
+        package['price']= price || package.price;
+        package['isIndian']= isIndian || package.isIndia;
 
+        console.log('old package')
         console.log(package);
 
         const newPackage = await Package.findById(package.id);
