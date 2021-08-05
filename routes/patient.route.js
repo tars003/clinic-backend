@@ -313,9 +313,9 @@ router.get('/get/:id', auth, async (req, res) => {
 
 
 // GET ROUTE FOR PATIENT
-router.get('/get/all', async (req, res) => {
+router.get('/get-all', async (req, res) => {
     try {
-        var patients = await Patient.find();
+        const patients = await Patient.find({});
         console.log(patients)
         return res.status(200).json({
             success: true,
