@@ -29,9 +29,9 @@ const getAppTime = (date, slot) => {
 }
 
 // GET ALL PAST APPOINTMENTS FOR A PATIENT
-router.get('/get/past-appointments', auth, async(req, res) => {
+router.get('/get/past-appointments/:id', auth, async(req, res) => {
     try {
-        let patient = await Patient.findById(req.body.data.id);
+        let patient = await Patient.findById(req.params.id);
         // console.log(patient)
         let appointments = await Appointment.find({ patientId: patient.id })
 
