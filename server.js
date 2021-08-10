@@ -1,7 +1,8 @@
 const express = require('express');
 const cors = require('cors');
 require("dotenv").config();
-
+const Image = require('./models/Image');
+const multer=require('multer')
 
 const connectDB = require('./util/db');
 const app = express();
@@ -16,6 +17,39 @@ app.use("/profile", require('./routes/profile.route'));
 app.use("/package", require('./routes/package.route'));
 app.use("/schedule", require('./routes/schedule.route'));
 app.use("/doctor", require('./routes/doctor.route'));
+
+var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads')
+    },
+
+    filename: function (req, file, cb) {
+        cb(null, new Date().toISOString() + file.originalname
+        )
+    }
+})
+
+var upload = multer({ storage: storage })
+app.post('/upload', upload.single('myFile'), async (req, res, next) => {
+    const file = req.file
+    if (!file) {
+        const error = new Error('Please upload a file')
+        error.httpStatusCode = 400
+        return next("hey error")
+    }
+
+
+    const imagepost = new Image({
+        image: file.path
+    })
+    const savedimage = await imagepost.save()
+    res.json(savedimage)
+})
+
+app.get('/image', async (req, res) => {
+    const image = await Image.find()
+    res.json(image)
+})
 
 const PORT = process.env.PORT || 5000;
 

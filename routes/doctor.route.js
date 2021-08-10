@@ -16,6 +16,66 @@ const getDate = () => {
     return moment()
 }
 
+// EDIT DOCTOR PERFORMA FOR A APPOINTMENT
+router.post('/set-performa/:appointmentId', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            performa,
+        } = obj;
+
+        let appointment = await Appointment.findById(req.params.appointmentId);
+        if(!appointment){
+            return res.status(404).json({
+                success: false,
+                message: 'No appointemnt found'
+            });
+        }
+
+
+        appointment['performa'] = performa;
+        console.log(appointment);
+        let newAppointment = await Appointment.findById(appointment.id);
+        newAppointment.overwrite(appointment);
+        
+        newAppointment['performa'] = performa;
+        console.log(newAppointment)
+        await newAppointment.save()
+
+
+        return res.status(200).json({
+            success: true,
+            data: newAppointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+//  GET APPOINTMENT PERFORMA ROUTE
+router.get('/get-performa/:appointmentId', async (req, res) => {
+    try {
+        let appointment = await Appointment.findById(req.params.appointmentId);
+        let performa = ''
+        if(appointment.performa) performa = appointment.performa;
+        return res.status(200).json({
+            success: true,
+            data: performa
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
 
 // GET ALL APPOINTMENTS FOR A PATIENT
 router.post('/edit', auth, async (req, res) => {
