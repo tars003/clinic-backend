@@ -30,7 +30,7 @@ var storage = multer.diskStorage({
 })
 
 var upload = multer({ storage: storage })
-app.post('/upload', upload.single('myFile'), async (req, res, next) => {
+app.post('/upload/:appointmentId', upload.single('myFile'), async (req, res, next) => {
     const file = req.file
     if (!file) {
         const error = new Error('Please upload a file')
@@ -40,7 +40,8 @@ app.post('/upload', upload.single('myFile'), async (req, res, next) => {
 
 
     const imagepost = new Image({
-        image: file.path
+        image: file.path,
+        appId: req.params.appointmentId
     })
     const savedimage = await imagepost.save()
     res.json(savedimage)

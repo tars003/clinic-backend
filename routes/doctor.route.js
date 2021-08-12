@@ -63,7 +63,7 @@ router.get('/get-performa/:appointmentId', async (req, res) => {
     try {
         let appointment = await Appointment.findById(req.params.appointmentId);
         let performa = ''
-        if(appointment.performa) performa = appointment.performa;
+        if(appointment.consultationPerforma) performa = appointment.consultationPerforma;
         return res.status(200).json({
             success: true,
             data: performa
@@ -160,5 +160,46 @@ router.get('/get-token/:phone', async (req, res) => {
         });
     }
 });
+
+
+// CREATE PERFORMA FOR PATIENT
+router.post('/set/:appointmentId', auth, async (req, res) => {
+    try {
+        const appointment = await Appointment.findById(req.params.appointmentId);
+
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        console.log(obj);
+
+        var performaKeys = Object.keys(obj);
+        performaKeys = performaKeys.filter(i => i != "data");
+        performa = performaKeys.map(key => {
+            let res = {};
+            res['_id'] = key;
+            res['description'] = obj[key];
+            return res;
+        });
+
+        console.log(performa)
+
+        appointment['consultationPerforma'] = performa;
+
+        const newAppointment = await Appointment.findById(req.params.appointmentId);
+        newAppointment.overwrite(appointment);
+        await newAppointment.save();
+
+        return res.status(200).json({
+            success: true,
+            data: newAppointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 
 module.exports = router;

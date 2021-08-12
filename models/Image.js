@@ -5,7 +5,8 @@ const imageSchema= mongoose.Schema(
         image:{
             type: String,
             required: true
-        }
+        },
+        appId: String
     }
 );
 

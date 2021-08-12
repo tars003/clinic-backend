@@ -30,8 +30,13 @@ const AppointmentSchema = mongoose.Schema({
         gender: String,
         age: Number
     },
-    performa: String,
-    prescription: String
+    prescription: String,
+    consultationPerforma: [
+        {
+            _id: String,
+            description: String
+        }
+    ],
 })
 
 module.exports = mongoose.model("appointment", AppointmentSchema);
