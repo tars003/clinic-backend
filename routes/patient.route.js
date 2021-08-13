@@ -120,6 +120,7 @@ router.post('/create', async (req, res) => {
             email,
             gender,
             phone,
+            address,
             isIndian,
         } = obj;
 
@@ -138,7 +139,8 @@ router.post('/create', async (req, res) => {
                 email,
                 gender,
                 age,
-                isIndian
+                isIndian,
+                address
             });
             const payload = {
                 data: {
@@ -175,6 +177,7 @@ router.post('/create/email', async (req, res) => {
             gender,
             phone,
             isIndian,
+            address
         } = obj;
 
         const tempProfile = await Patient.findOne({ email });
@@ -192,7 +195,8 @@ router.post('/create/email', async (req, res) => {
                 email,
                 gender,
                 age,
-                isIndian
+                isIndian,
+                address
             });
             const payload = {
                 data: {

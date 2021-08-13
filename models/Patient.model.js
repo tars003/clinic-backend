@@ -7,6 +7,7 @@ const PatientSchema = new mongoose.Schema({
     gender: String,
     age: Number,
     isIndian: Boolean,
+    address: String,
     package: {
         name: String,
         consultationsLeft: Number,
