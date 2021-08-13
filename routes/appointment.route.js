@@ -420,7 +420,7 @@ router.post('/get-invoice', auth, async(req, res) => {
 
                             if(req.body['info']['id'] == patient.id) {
                                 info = {
-                                    id: patient.id,
+                                    _id: patient.id,
                                     name: patient.name,
                                     age: patient.age,
                                     gender: patient.gender
@@ -443,7 +443,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                             }
                             else {
                                 info = {
-                                    id: req.body['info']['id'],
+                                    _id: req.body['info']['id'],
                                     name: req.body['info']['name'],
                                     age: req.body['info']['age'],
                                     gender: req.body['info']['gender']
@@ -479,10 +479,10 @@ router.post('/get-invoice', auth, async(req, res) => {
                             }
                         }
                         else {
-                                return res.status(400).json({
-                                    success: false,
-                                    message: 'no profile info found'
-                                })
+                            return res.status(400).json({
+                                success: false,
+                                message: 'no profile info found'
+                            })
                         }
 
                         // console.log(info);
