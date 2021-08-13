@@ -16,23 +16,24 @@ module.exports = async function (req, res, next) {
     }
     else {
       let user = await Patient.findById(id);
-      // console.log(user);
+      let user1 = await Doctor.findById(id);
+
       // If User is found
       if (user) {
-        console.log(user);
+        console.log(user.name);
         req.body.data = user;
         next();
       }
 
-      user = await Doctor.findById(id);
-      if (user) {
+      
+      else if (user1) {
         console.log(user);
         req.body.data = user;
         next();
       }
       // If user is not found
       else {
-        res.status(500).json({ error: "auth token corrupted" });
+        return res.status(500).json({ error: "auth token corrupted" });
       }
     }
   }
