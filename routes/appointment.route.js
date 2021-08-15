@@ -423,7 +423,8 @@ router.post('/get-invoice', auth, async(req, res) => {
                                     _id: patient.id,
                                     name: patient.name,
                                     age: patient.age,
-                                    gender: patient.gender
+                                    gender: patient.gender,
+                                    phone: patient.phone
                                 }
                                 // If package exists
                                 if(patient.package){
@@ -446,7 +447,8 @@ router.post('/get-invoice', auth, async(req, res) => {
                                     _id: req.body['info']['id'],
                                     name: req.body['info']['name'],
                                     age: req.body['info']['age'],
-                                    gender: req.body['info']['gender']
+                                    gender: req.body['info']['gender'],
+                                    phone: patient.phone
                                 };
                                 const profile = patient.profiles.filter((profile) => profile.id ==req.body['info']['id'])[0];
                                 console.log('profile');
