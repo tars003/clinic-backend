@@ -130,6 +130,25 @@ router.get('/get-performa/:appointmentId', async (req, res) => {
     }
 });
 
+//  GET APPOINTMENT PERFORMA ROUTE
+router.get('/get-prescription/:appointmentId', async (req, res) => {
+    try {
+        let appointment = await Appointment.findById(req.params.appointmentId);
+        let prescription = ''
+        if(appointment.prescription) prescription = appointment.prescription;
+        return res.status(200).json({
+            success: true,
+            data: prescription
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 // GET ALL APPOINTMENTS FOR A PATIENT
 router.post('/edit', auth, async (req, res) => {
     try {
