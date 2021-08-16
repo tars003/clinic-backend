@@ -30,7 +30,13 @@ const AppointmentSchema = mongoose.Schema({
         gender: String,
         age: Number
     },
-    prescription: String,
+    prescription: {
+        instructions: String,
+        precautions: String,
+        tests: String,
+        field1: String,
+        field2: String
+    },
     consultationPerforma: [
         {
             _id: String,

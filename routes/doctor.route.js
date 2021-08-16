@@ -58,6 +58,59 @@ router.post('/set-performa/:appointmentId', auth, async (req, res) => {
     }
 });
 
+// EDIT DOCTOR PERFORMA FOR A APPOINTMENT
+router.post('/set-prescription/:appointmentId', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            instructions,
+            precautions,
+            tests,
+            field1,
+            field2
+        } = obj;
+
+        let appointment = await Appointment.findById(req.params.appointmentId);
+        if(!appointment){
+            return res.status(404).json({
+                success: false,
+                message: 'No appointemnt found'
+            });
+        }
+
+
+        if(instructions) appointment['prescription']['instructions'] = instructions;
+        if(precautions) appointment['prescription']['precautions'] = precautions;
+        if(tests) appointment['prescription']['tests'] = tests;
+        if(field1) appointment['prescription']['field1'] = field1;
+        console.log(appointment);
+        let newAppointment = await Appointment.findById(appointment.id);
+        newAppointment.overwrite(appointment);
+        
+        if(instructions) newAppointment['prescription']['instructions'] = instructions;
+        if(precautions) newAppointment['prescription']['precautions'] = precautions;
+        if(tests) newAppointment['prescription']['tests'] = tests;
+        if(field1) newAppointment['prescription']['field1'] = field1;
+        if(field2) newAppointment['prescription']['field2'] = field2;
+        console.log(newAppointment)
+        await newAppointment.save()
+
+
+        return res.status(200).json({
+            success: true,
+            data: newAppointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 //  GET APPOINTMENT PERFORMA ROUTE
 router.get('/get-performa/:appointmentId', async (req, res) => {
     try {
