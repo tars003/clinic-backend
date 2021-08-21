@@ -18,6 +18,7 @@ app.use("/package", require('./routes/package.route'));
 app.use("/schedule", require('./routes/schedule.route'));
 app.use("/doctor", require('./routes/doctor.route'));
 app.use("/inventory", require('./routes/product.route'));
+app.use("/coupon", require('./routes/coupon.route'));
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {

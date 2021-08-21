@@ -205,13 +205,13 @@ router.post('/edit', auth, async (req, res) => {
 });
 
 //  LOGIN ROUTE
-router.get('/get-token/:phone', async (req, res) => {
+router.get('/get-token/:email', async (req, res) => {
     try {
-        let doctor = await Doctor.findOne({ phone: req.params.phone });
+        let doctor = await Doctor.findOne({ email: req.params.email });
         if(!doctor){
             return res.status(404).json({
                 success: false,
-                message: 'No user with found corresponding to given contact number !'
+                message: 'No user with found corresponding to email !'
             });
         }
         const tokenPayload = {

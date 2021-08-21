@@ -28,7 +28,8 @@ const AppointmentSchema = mongoose.Schema({
         _id: String,
         name: String,
         gender: String,
-        age: Number
+        age: Number,
+        phone: String
     },
     prescription: {
         instructions: String,
