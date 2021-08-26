@@ -9,8 +9,25 @@ const Schedule = require('../models/Schedule.model');
 const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
-
 const generateSlots = require('../util/GenerateSlots');
+
+// Require google from googleapis package.
+const { google } = require('googleapis');
+
+// Require oAuth2 from our google instance.
+const { OAuth2 } = google.auth
+
+// Create a new instance of oAuth and set our Client ID & Client Secret.
+const oAuth2Client = new OAuth2(
+    process.env.ACCESS_ID,
+    process.env.ACCESS_SECRET
+)
+
+// Call the setCredentials method on our oAuth2Client instance and set our refresh token.
+
+oAuth2Client.setCredentials({
+    refresh_token: process.env.REFRESH_TOKEN
+});
 
 const getDate = () => {
     return moment()
@@ -29,13 +46,13 @@ const getAppTime = (date, slot) => {
 }
 
 // GET ALL PAST APPOINTMENTS FOR A PATIENT
-router.get('/get/past-appointments/:id', auth, async(req, res) => {
+router.get('/get/past-appointments/:id', auth, async (req, res) => {
     try {
         let patient = await Patient.findById(req.params.id);
         // console.log(patient)
         let appointments = await Appointment.find({ patientId: patient.id })
 
-        if(patient){
+        if (patient) {
             return res.status(200).json({
                 success: true,
                 length: appointments.length,
@@ -47,7 +64,7 @@ router.get('/get/past-appointments/:id', auth, async(req, res) => {
                 message: 'patient not found'
             });
         }
-    } catch (err){
+    } catch (err) {
         console.log(err);
         res.status(503).json({
             sucess: false,
@@ -58,7 +75,7 @@ router.get('/get/past-appointments/:id', auth, async(req, res) => {
 
 
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
-router.post('/reschedule', auth, async(req, res) => {
+router.post('/reschedule', auth, async (req, res) => {
     try {
         let obj = req.body;
         console.log(obj);
@@ -74,17 +91,17 @@ router.post('/reschedule', auth, async(req, res) => {
 
         const daySchedule = await Schedule.findById(newDate);
         //  Schedule for the date in request exists
-        if(daySchedule) {
+        if (daySchedule) {
             const checkSlot = (slot) => {
                 return slot.slot == newSlot
             }
             var slotArr = daySchedule.slots.filter(checkSlot);
             // Slots array does exist for the schedule of the date in request
             // Also checks that slot present in request does agree with the given day's schedule
-            if(slotArr.length >= 1) {
+            if (slotArr.length >= 1) {
                 var slotObj = slotArr[0]
                 // if the slot is already booked by another payment complete appointment
-                if(slotObj.booked) {
+                if (slotObj.booked) {
                     return res.status(400).json({
                         success: false,
                         message: 'Slot is already booked'
@@ -95,7 +112,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     // CREATING APPOINTMENT
                     // saving the payment status INCOMPLETE in db
                     let appointment = await Appointment.findById(appointmentId);
-                    if(!appointment){
+                    if (!appointment) {
                         return res.stats(400).json({
                             success: false,
                             message: 'appointment Id invalid'
@@ -109,7 +126,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     console.log(diffMins);
                     console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
                     console.log(currDate.format('DD-MM-YYYY HH:mm'));
-                    if(diffMins < rescheduleTime){
+                    if (diffMins < rescheduleTime) {
                         return res.status(400).json({
                             success: false,
                             message: 'time period for reschedule is closed'
@@ -133,7 +150,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     var daySchedule1 = await Schedule.findById(newDate);
                     const newSchedule = daySchedule1.slots.map((slot) => {
                         var newSlot1 = slot;
-                        if(slot.slot == newSlot) {
+                        if (slot.slot == newSlot) {
                             newSlot1.booked = true;
                             return newSlot1;
                         }
@@ -151,7 +168,7 @@ router.post('/reschedule', auth, async(req, res) => {
                     var daySchedule2 = await Schedule.findById(oldDate);
                     const newSchedule2 = daySchedule2.slots.map((slot) => {
                         var oldSlot1 = slot;
-                        if(slot.slot == oldSlot) {
+                        if (slot.slot == oldSlot) {
                             oldSlot1.booked = false;
                             return oldSlot1;
                         }
@@ -188,7 +205,7 @@ router.post('/reschedule', auth, async(req, res) => {
                 message: 'Schedule not found for this date'
             })
         }
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.status(503).json({
             sucess: false,
@@ -198,13 +215,13 @@ router.post('/reschedule', auth, async(req, res) => {
 })
 
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
-router.get('/cancel/:appointmentId', auth, async(req, res) => {
+router.get('/cancel/:appointmentId', auth, async (req, res) => {
     try {
 
         // CREATING APPOINTMENT
         // saving the payment status INCOMPLETE in db
         let appointment = await Appointment.findById(req.params.appointmentId);
-        if(!appointment){
+        if (!appointment) {
             return res.status(400).json({
                 success: false,
                 message: 'appointment Id invalid'
@@ -218,7 +235,7 @@ router.get('/cancel/:appointmentId', auth, async(req, res) => {
         console.log(diffMins);
         console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
         console.log(currDate.format('DD-MM-YYYY HH:mm'));
-        if(diffMins < cancelTime){
+        if (diffMins < cancelTime) {
             return res.status(400).json({
                 success: false,
                 message: 'time period for cancellation is closed'
@@ -226,14 +243,14 @@ router.get('/cancel/:appointmentId', auth, async(req, res) => {
         }
 
 
-        let newAppointment = await Appointment.findByIdAndRemove(req.params.    appointmentId);
+        let newAppointment = await Appointment.findByIdAndRemove(req.params.appointmentId);
 
 
         //  Updating day schedule for the slot to booked
         var daySchedule1 = await Schedule.findById(appointment.date);
         const newSchedule = daySchedule1.slots.map((slot) => {
             var newSlot1 = slot;
-            if(slot.slot == appointment.timeSlot) {
+            if (slot.slot == appointment.timeSlot) {
                 newSlot1.booked = false;
                 return newSlot1;
             }
@@ -250,7 +267,7 @@ router.get('/cancel/:appointmentId', auth, async(req, res) => {
             success: true,
             data: newAppointment
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.status(503).json({
             sucess: false,
@@ -264,7 +281,7 @@ router.get('/cancel/:appointmentId', auth, async(req, res) => {
 // GET ALL APPOINTMENTS FOR A PATIENT
 router.get('/get-appointments/:date', auth, async (req, res) => {
     try {
-        const appointments = await Appointment.find({ date : req.params.date });
+        const appointments = await Appointment.find({ date: req.params.date });
         console.log(appointments);
 
         return res.status(200).json({
@@ -272,7 +289,7 @@ router.get('/get-appointments/:date', auth, async (req, res) => {
             length: appointments.length,
             data: appointments
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -283,14 +300,14 @@ router.get('/get-appointments/:date', auth, async (req, res) => {
 
 
 // CONFIRM PAYMENT STATUS OF APPOINTMENT
-router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
+router.get('/confirm-appointment/:appointmentId', auth, async (req, res) => {
     try {
         const appointmentId = req.params.appointmentId
         const appointmentData = await Appointment.findById(appointmentId);
         var date = appointmentData.date;
         var isActive = false;
         // coupon validity
-        if(appointmentData.coupon == 'NONE') {
+        if (appointmentData.coupon == 'NONE') {
             isActive = true;
         }
         else {
@@ -298,9 +315,9 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
             isActive = coupon.isActive;
         }
         // checking if the appointment object in db actually exists
-        if(appointmentData) {
+        if (appointmentData) {
             // checking if the coupon code is still active
-            if(isActive) {
+            if (isActive) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
@@ -308,10 +325,10 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
                 const slotArr = daySchedule.slots.filter(checkSlot);
                 // console.log(slotArr);
                 // If the slot present in appointment object is acutally found in schedule
-                if(slotArr.length > 0) {
+                if (slotArr.length > 0) {
                     var slotObj = slotArr[0];
                     // if the slot has already been booked
-                    if(false) {
+                    if (false) {
                         return res.status(400).json({
                             success: false,
                             message: 'Slot is already booked, initiating a refund'
@@ -356,7 +373,7 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
             })
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.status(503).json({
             sucess: false,
@@ -366,7 +383,7 @@ router.get('/confirm-appointment/:appointmentId', auth, async(req, res) => {
 })
 
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
-router.post('/get-invoice', auth, async(req, res) => {
+router.post('/get-invoice', auth, async (req, res) => {
     try {
         var appointmentData = req.body;
         console.log('appointmentData');
@@ -379,28 +396,28 @@ router.post('/get-invoice', auth, async(req, res) => {
         // getting coupon object from db
         var coupon = await Coupon.findById(appointmentData.coupon);
         // if no coupon present in request
-        if(!coupon) {
+        if (!coupon) {
             coupon = {
                 _id: 'NONE',
                 isActive: true,
-                percentOff : 100
+                percentOff: 100
             }
         }
         //  The coupon present should have isActuve true in db
-        if(coupon.isActive) {
+        if (coupon.isActive) {
             const daySchedule = await Schedule.findById(appointmentData.date);
             //  Schedule for the date in request exists
-            if(daySchedule) {
+            if (daySchedule) {
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
                 }
                 var slotArr = daySchedule.slots.filter(checkSlot);
                 // Slots array does exist for the schedule of the date in request
                 // Also checks that slot present in request does agree with the given day's schedule
-                if(slotArr.length >= 1) {
+                if (slotArr.length >= 1) {
                     var slotObj = slotArr[0]
                     // if the slot is already booked by another payment complete appointment
-                    if(slotObj.booked) {
+                    if (slotObj.booked) {
                         return res.status(400).json({
                             success: false,
                             message: 'Slot is already booked'
@@ -411,14 +428,14 @@ router.post('/get-invoice', auth, async(req, res) => {
                         // PACKAGE CONSULTATIONS UTILIZATION
                         const patient = await Patient.findById(req.body.data.id);
                         // calculating fees based on the coupon object retrieved from db
-                        var fee = doctorData.fee * (coupon.percentOff/100);
+                        var fee = doctorData.fee * (coupon.percentOff / 100);
 
                         var info = {};
                         console.log(req.body);
-                        if(req.body['info']) {
+                        if (req.body['info']) {
 
 
-                            if(req.body['info']['id'] == patient.id) {
+                            if (req.body['info']['id'] == patient.id) {
                                 info = {
                                     _id: patient.id,
                                     name: patient.name,
@@ -427,11 +444,11 @@ router.post('/get-invoice', auth, async(req, res) => {
                                     phone: patient.phone
                                 }
                                 // If package exists
-                                if(patient.package){
+                                if (patient.package) {
                                     console.log(patient.package);
                                     var consultations = patient.package.consultationsLeft;
                                     // If his current package has some consultations left
-                                    if(consultations > 0){
+                                    if (consultations > 0) {
                                         console.log('inside consultations 0')
                                         fee = 0;
                                         patient.package.consultationsLeft = consultations - 1;
@@ -450,15 +467,15 @@ router.post('/get-invoice', auth, async(req, res) => {
                                     gender: req.body['info']['gender'],
                                     phone: patient.phone
                                 };
-                                const profile = patient.profiles.filter((profile) => profile.id ==req.body['info']['id'])[0];
+                                const profile = patient.profiles.filter((profile) => profile.id == req.body['info']['id'])[0];
                                 console.log('profile');
                                 console.log(profile);
 
-                                if(profile.package){
+                                if (profile.package) {
                                     console.log(profile.package);
                                     var consultations = profile.package.consultationsLeft;
                                     // If his current package has some consultations left
-                                    if(consultations > 0){
+                                    if (consultations > 0) {
                                         console.log('inside consultations 0')
                                         fee = 0;
                                         profile.package.consultationsLeft = consultations - 1;
@@ -467,7 +484,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                                         // saving new consultation count in patient profile arr
 
                                         let profileArr = patient.profiles.map((profilePrev) => {
-                                            if(profilePrev.id == profile.id) return profile;
+                                            if (profilePrev.id == profile.id) return profile;
                                             else return profilePrev;
                                         });
                                         patient.profiles = profileArr;
@@ -502,7 +519,7 @@ router.post('/get-invoice', auth, async(req, res) => {
                         // console.log(daySchedule);
                         const newSchedule = daySchedule1.slots.map((slot) => {
                             var newSlot = slot;
-                            if(slot.slot == appointment.timeSlot) {
+                            if (slot.slot == appointment.timeSlot) {
                                 newSlot.booked = true;
                                 return newSlot;
                             }
@@ -515,11 +532,13 @@ router.post('/get-invoice', auth, async(req, res) => {
                         daySchedule1.overwrite(daySchedule1);
                         daySchedule1.save();
 
+                        createLink(appointment);
+
                         return res.status(200).json({
                             success: true,
                             data: {
-                                _id : appointment.id,
-                                fees : appointment.fees
+                                _id: appointment.id,
+                                fees: appointment.fees
                             }
                         });
                     }
@@ -546,14 +565,93 @@ router.post('/get-invoice', auth, async(req, res) => {
                 message: 'Coupon either expired or not valid'
             })
         }
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         res.status(503).json({
             sucess: false,
             message: 'Server error'
         })
     }
-})
+});
+
+const createLink = (appointment) => {
+    const timeZone = 'Asia/Kolkata';
+    const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
+
+    const startTime = appointment.timeSlot.split(' - ')[0];
+    const endTime = appointment.timeSlot.split(' - ')[1];
+    const date = appointment.date;
+    let start = moment(
+        `${date} ${startTime}`,
+        'DD-MM-YYYY HH:mm'
+    );
+    let end = moment(
+        `${date} ${endTime}`,
+        'DD-MM-YYYY HH:mm'
+    );
+    const eventStartTime = start.toDate();
+    const eventEndTime = end.toDate();
+
+    const event = {
+        summary: `Consultation`,
+        description: `Online Consultation`,
+        colorId: 1,
+        start: {
+            dateTime: eventStartTime,
+            timeZone: timeZone,
+        },
+        end: {
+            dateTime: eventEndTime,
+            timeZone: timeZone,
+        },
+        conferenceData: {
+            createRequest: {
+                requestId: "sample123",
+                conferenceSolutionKey: { type: "hangoutsMeet" },
+            },
+        },
+    };
+    console.log(event);
+    calendar.freebusy.query(
+        {
+            resource: {
+                timeMin: eventStartTime,
+                timeMax: eventEndTime,
+                timeZone: timeZone,
+                items: [{ id: 'primary' }],
+            },
+        },
+        (err, res) => {
+            if (err) return console.error('Free Busy Query Error: ', err)
+            const eventArr = res.data.calendars.primary.busy;
+            console.log(eventArr);
+            if (eventArr.length === 0) {
+                const e = calendar.events.insert(
+                    { calendarId: 'primary', resource: event, conferenceDataVersion: 1, },
+                    (err, response) => {
+                        if (err) return console.error('Error Creating Calender Event:', err);
+
+                        console.log(response.data.hangoutLink);
+                        appointment['consultationLink'] = response.data.hangoutLink;
+                        (async () => {
+                            const newAppointment = await Appointment.findById(appointment.id);
+                            console.log(appointment);
+                            newAppointment.overwrite(appointment);
+                            await newAppointment.save();
+                        })();
+                        
+                        return console.log('Calendar event successfully created.')
+                    }
+                );
+                return e
+            }
+            else {
+                return console.log(`Sorry I'm busy...`)
+            }
+        }
+    )
+
+}
 
 
 

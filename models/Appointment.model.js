@@ -12,6 +12,10 @@ const AppointmentSchema = mongoose.Schema({
         type: String,
         default: 'UPCOMING'
     },
+    consultationLink: {
+        type: String,
+        default: ''
+    },
     paymentStatus: {
         type: String,
         default: 'INCOMPLETE'
