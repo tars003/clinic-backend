@@ -16,8 +16,8 @@ const generateSlots = require('../util/GenerateSlots');
 var transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
-        user: 'ajaysharma2ku@gmail.com',
-        pass: 'ibqqakjujhthtvvz'
+        user: 'contact@homeosure.com',
+        pass: 'rnvfjhztdkkzagoa'
     }
 });
 
@@ -59,9 +59,8 @@ router.get('/otp/patient-email/:email', async (req, res) => {
 
 const sendMail = (email, sub, text) => {
     var mailOptions = {
-        from: 'ajaysharma2ku@gmail.com',
+        from: 'contact@homeosure.com',
         to: email,
-        // to: 'sharmaajay2kuu@gmail.com',
         subject: sub,
         text: text
     };
