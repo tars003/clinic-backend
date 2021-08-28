@@ -60,8 +60,8 @@ router.get('/otp/patient-email/:email', async (req, res) => {
 const sendMail = (email, sub, text) => {
     var mailOptions = {
         from: 'ajaysharma2ku@gmail.com',
-        // to: email,
-        to: 'sharmaajay2kuu@gmail.com',
+        to: email,
+        // to: 'sharmaajay2kuu@gmail.com',
         subject: sub,
         text: text
     };
