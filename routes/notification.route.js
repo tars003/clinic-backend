@@ -29,23 +29,25 @@ function getRandomInt() {
 
 router.get('/otp/patient-email/:email', async (req, res) => {
     try {
-        const patient = await Patient.findOne({ email: req.params.email });
-        console.log(patient);
-        let obj = patient;
-        obj['currOtp'] = getRandomInt();
-        await patient.overwrite(obj);
-        await patient.save();
+        // const patient = await Patient.findOne({ email: req.params.email });
+        // console.log(patient);
+        // let obj = patient;
+        // obj['currOtp'] = getRandomInt();
+        // await patient.overwrite(obj);
+        // await patient.save();
+
+        const otp = getRandomInt();
 
         sendMail(
-            patient.email,
+            req.params.email,
             'OTP for logging in',
-            `Dear customer your OTP to login is ${obj['currOtp']}`
+            `Dear customer your OTP to login is ${otp}`
         );
 
         return res.status(200).json({
             success: true,
             data: {
-                otp: obj['currOtp'],
+                otp: otp,
             }
         })
     } catch (err) {
