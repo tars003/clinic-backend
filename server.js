@@ -10,18 +10,18 @@ const app = express();
 connectDB();
 
 app.use(express.json());
-app.use('/public', express.static('public'));
+app.use('/server/public', express.static('public'));
 app.use(cors());
-app.use("/patient", require('./routes/patient.route'));
-app.use("/performa", require('./routes/performa.route'));
-app.use("/appointment", require('./routes/appointment.route'));
-app.use("/profile", require('./routes/profile.route'));
-app.use("/package", require('./routes/package.route'));
-app.use("/schedule", require('./routes/schedule.route'));
-app.use("/doctor", require('./routes/doctor.route'));
-app.use("/inventory", require('./routes/product.route'));
-app.use("/coupon", require('./routes/coupon.route'));
-app.use("/notify", require('./routes/notification.route'));
+app.use("/server/patient", require('./routes/patient.route'));
+app.use("/server/performa", require('./routes/performa.route'));
+app.use("/server/appointment", require('./routes/appointment.route'));
+app.use("/server/profile", require('./routes/profile.route'));
+app.use("/server/package", require('./routes/package.route'));
+app.use("/server/schedule", require('./routes/schedule.route'));
+app.use("/server/doctor", require('./routes/doctor.route'));
+app.use("/server/inventory", require('./routes/product.route'));
+app.use("/server/coupon", require('./routes/coupon.route'));
+app.use("/server/notify", require('./routes/notification.route'));
 
 var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -36,7 +36,7 @@ var storage = multer.diskStorage({
 })
 
 var upload = multer({ storage: storage })
-app.post('/file/upload/:appointmentId', upload.single('myFile'), async (req, res, next) => {
+app.post('/server/file/upload/:appointmentId', upload.single('myFile'), async (req, res, next) => {
     const file = req.file;
     console.log(file);
     if (!file) {
@@ -64,7 +64,7 @@ app.post('/file/upload/:appointmentId', upload.single('myFile'), async (req, res
     }
 })
 
-app.get('/file/get-images/:appId', async (req, res) => {
+app.get('/server/file/get-images/:appId', async (req, res) => {
     const image = await Image.findById(req.params.appId);
     res.json(image)
 })
