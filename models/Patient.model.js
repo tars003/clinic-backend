@@ -38,7 +38,8 @@ const PatientSchema = new mongoose.Schema({
                 }
             ]
         }
-    ]
+    ],
+    currOtp: String,
 })
 
 module.exports = mongoose.model("patient", PatientSchema);
