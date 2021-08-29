@@ -276,4 +276,34 @@ router.post('/set/:appointmentId', auth, async (req, res) => {
 });
 
 
+// CREATE DOCTOR
+router.post('/create', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        console.log(obj);
+
+        const doctor = await Doctor.create({
+            name: obj.name,
+            email:  obj.email,
+            phone: obj.phone,
+            fee: obj.fee
+        })
+
+        return res.status(200).json({
+            success: true,
+            data: doctor
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
+
+
 module.exports = router;
