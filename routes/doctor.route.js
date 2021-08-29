@@ -277,7 +277,7 @@ router.post('/set/:appointmentId', auth, async (req, res) => {
 
 
 // CREATE DOCTOR
-router.post('/create', auth, async (req, res) => {
+router.post('/create', async (req, res) => {
     try {
         let obj = req.body;
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
