@@ -152,7 +152,7 @@ router.get('/get-prescription/:appointmentId', async (req, res) => {
 });
 
 // GET ALL APPOINTMENTS FOR A PATIENT
-router.post('/edit', auth, async (req, res) => {
+router.post('/edit', async (req, res) => {
     try {
         let obj = req.body;
         console.log(obj);
@@ -168,7 +168,8 @@ router.post('/edit', auth, async (req, res) => {
             experience,
         } = obj;
 
-        let doctor = await Doctor.findById(req.body.data);
+        let doctor = await Doctor.find();
+        doctor = doctor[0];
         if(!doctor){
             return res.status(404).json({
                 success: false,
