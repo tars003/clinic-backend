@@ -1,6 +1,7 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
+const Razorpay = require('Razorpay'); 
 const router = Router();
 
 const Appointment = require('../models/Appointment.model');
@@ -22,6 +23,13 @@ const oAuth2Client = new OAuth2(
     process.env.ACCESS_ID,
     process.env.ACCESS_SECRET
 )
+
+
+const razorpayInstance = new Razorpay({
+    key_id: process.env.RP_ID,
+    key_secret: process.env.RP_SECRET,
+});
+
 
 // Call the setCredentials method on our oAuth2Client instance and set our refresh token.
 
@@ -300,7 +308,7 @@ router.get('/get-appointments/:date', auth, async (req, res) => {
 
 
 // CONFIRM PAYMENT STATUS OF APPOINTMENT
-router.get('/confirm-appointment/:appointmentId', auth, async (req, res) => {
+router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
     try {
         const appointmentId = req.params.appointmentId
         const appointmentData = await Appointment.findById(appointmentId);
@@ -338,7 +346,16 @@ router.get('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                     else {
                         // updating appointment payment status to COMPLETE
                         var appointment = await Appointment.findById(appointmentId);
-                        appointment['paymentStatus'] = 'COMPLETE';
+
+                        var {orderId, paymentId} = req.body;
+                        const sig = req.get('x-razorpay-signature');
+                        const status = confirmPayment(orderId, paymentId, sig);
+                        if (status) {
+                            appointment['paymentStatus'] = 'COMPLETE';
+                        } else {
+                            appointment['paymentStatus'] = 'FAILED';
+                        }
+                        
                         var newAppointment = await Appointment.findById(appointmentId);
                         newAppointment.overwrite(appointment);
                         await newAppointment.save();
@@ -429,12 +446,11 @@ router.post('/get-invoice', auth, async (req, res) => {
                         const patient = await Patient.findById(req.body.data.id);
                         // calculating fees based on the coupon object retrieved from db
                         var fee = doctorData.fee * (coupon.percentOff / 100);
-
                         var info = {};
                         console.log(req.body);
+                        // CHECKING FOR PACKAGE & NUMBER OF CINSULTATIONS LEFT FOR THE PROFILE
                         if (req.body['info']) {
-
-
+                            // CHECKING IF THE APPOINTMENT IS BEING BOOKED FOR MAIN PROFILE OF THE PATIENT
                             if (req.body['info']['id'] == patient.id) {
                                 info = {
                                     _id: patient.id,
@@ -482,7 +498,6 @@ router.post('/get-invoice', auth, async (req, res) => {
                                         console.log(profile);
 
                                         // saving new consultation count in patient profile arr
-
                                         let profileArr = patient.profiles.map((profilePrev) => {
                                             if (profilePrev.id == profile.id) return profile;
                                             else return profilePrev;
@@ -504,19 +519,29 @@ router.post('/get-invoice', auth, async (req, res) => {
                             })
                         }
 
-                        // console.log(info);
-
                         // CREATING APPOINTMENT
                         // saving the payment status INCOMPLETE in db
                         appointmentData['fees'] = fee.toString();
                         appointmentData['coupon'] = coupon;
                         appointmentData['info'] = info;
                         delete appointmentData.data;
-                        const appointment = await Appointment.create(appointmentData);
+                        let appointment = await Appointment.create(appointmentData);
+
+                        // CREATE A RAZORPAY ORDER
+                        const currency = patient.isIndian == undefined ? 'INR' : 'USD';
+                        const receipt = randomStr(10, '123465789abcdefgh');
+                        const notes = {
+                            "patientName" : patient.name
+                        };
+                        const order = await createOrder(fee, currency, receipt, notes);
+                        if (order.id) {
+                            appointment['orderId'] = order.id;
+                            appointment['receipt'] = order.receipt;
+                            await appointment.save();
+                        }
 
                         //  Updating day schedule for the slot to booked
                         var daySchedule1 = await Schedule.findById(appointmentData.date);
-                        // console.log(daySchedule);
                         const newSchedule = daySchedule1.slots.map((slot) => {
                             var newSlot = slot;
                             if (slot.slot == appointment.timeSlot) {
@@ -528,17 +553,18 @@ router.post('/get-invoice', auth, async (req, res) => {
                             }
                         })
                         daySchedule1['slots'] = newSchedule
-                        // console.log(daySchedule1);
                         daySchedule1.overwrite(daySchedule1);
                         daySchedule1.save();
 
+                        // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         createLink(appointment);
 
                         return res.status(200).json({
                             success: true,
                             data: {
                                 _id: appointment.id,
-                                fees: appointment.fees
+                                fees: appointment.fees,
+                                orderData: order
                             }
                         });
                     }
@@ -651,6 +677,36 @@ const createLink = (appointment) => {
         }
     )
 
+}
+
+const randomStr = (len, arr) => {
+    var ans = '';
+    for (var i = len; i > 0; i--) {
+        ans += 
+          arr[Math.floor(Math.random() * arr.length)];
+    }
+    return ans;
+}
+
+const createOrder = async (amount, currency, receipt, notes) => {
+    try {
+        const fee = amount*100;
+        const order = await razorpayInstance.orders.create({fee, currency, receipt, notes});
+        return order;
+    } catch (err) {
+        console.log('error creating rzp order');
+        console.log(err);
+        return ({});
+    }
+}
+
+const confirmPayment = (orderId, paymentId, sig) => {
+    let hmac = crypto.createHmac('sha256', process.env.RP_SECRET); 
+    hmac.update(orderId + "|" + paymentId);
+    const generated_signature = hmac.digest('hex');
+    
+    if(sig===generated_signature) return true
+    else return false;
 }
 
 

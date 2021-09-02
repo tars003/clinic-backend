@@ -48,6 +48,14 @@ const AppointmentSchema = mongoose.Schema({
             description: String
         }
     ],
+    orderId: {
+        type: String,
+        required: false
+    },
+    receipt: {
+        type: String,
+        required: false
+    },
 })
 
 module.exports = mongoose.model("appointment", AppointmentSchema);
