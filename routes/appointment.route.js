@@ -1,7 +1,7 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
-const Razorpay = require('Razorpay'); 
+const Razorpay = require('razorpay'); 
 const router = Router();
 
 const Appointment = require('../models/Appointment.model');
@@ -533,6 +533,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         const notes = {
                             "patientName" : patient.name
                         };
+                        console
                         const order = await createOrder(fee, currency, receipt, notes);
                         if (order.id) {
                             appointment['orderId'] = order.id;
@@ -691,6 +692,8 @@ const randomStr = (len, arr) => {
 const createOrder = async (amount, currency, receipt, notes) => {
     try {
         const fee = amount*100;
+        console.log('Creating rzp order');
+        console.log(fee, currency, receipt, notes);
         const order = await razorpayInstance.orders.create({fee, currency, receipt, notes});
         return order;
     } catch (err) {
