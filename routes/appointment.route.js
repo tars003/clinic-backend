@@ -528,7 +528,10 @@ router.post('/get-invoice', auth, async (req, res) => {
                         let appointment = await Appointment.create(appointmentData);
 
                         // CREATE A RAZORPAY ORDER
-                        const currency = patient.isIndian == undefined ? 'INR' : 'USD';
+                        let currency = 'INR';
+                        if(patient.isIndian != undefined) {
+                            currency = patient.isIndian ? 'INR' : 'USD';
+                        }
                         const receipt = randomStr(10, '123465789abcdefgh');
                         const notes = {
                             "patientName" : patient.name
