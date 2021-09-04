@@ -694,7 +694,7 @@ const createOrder = async (amount, currency, receipt, notes) => {
         const fee = amount*100;
         console.log('Creating rzp order');
         console.log(fee, currency, receipt, notes);
-        const order = await razorpayInstance.orders.create({fee, currency, receipt, notes});
+        const order = await razorpayInstance.orders.create({amount: fee, currency, receipt, notes});
         return order;
     } catch (err) {
         console.log('error creating rzp order');
