@@ -3,6 +3,7 @@ const jwt = require('jsonwebtoken');
 const moment = require('moment');
 const Razorpay = require('razorpay'); 
 const router = Router();
+const crypto = require('crypto');
 
 const Appointment = require('../models/Appointment.model');
 const Patient = require('../models/Patient.model.js');
