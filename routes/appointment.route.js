@@ -11,7 +11,8 @@ const Schedule = require('../models/Schedule.model');
 const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
-const generateSlots = require('../util/GenerateSlots');
+const generateSlots = require('../util/GenerateSlots')
+const {sendMail} = require('../util/mail');
 
 // Require google from googleapis package.
 const { google } = require('googleapis');
@@ -545,6 +546,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                             await appointment.save();
                         }
 
+
                         //  Updating day schedule for the slot to booked
                         var daySchedule1 = await Schedule.findById(appointmentData.date);
                         const newSchedule = daySchedule1.slots.map((slot) => {
@@ -562,7 +564,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         daySchedule1.save();
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
-                        createLink(appointment);
+                        createLink(appointment, doctorData.email, patient.email);
 
                         return res.status(200).json({
                             success: true,
@@ -605,7 +607,7 @@ router.post('/get-invoice', auth, async (req, res) => {
     }
 });
 
-const createLink = (appointment) => {
+const createLink = (appointment, doctorEmail, patientEmail) => {
     const timeZone = 'Asia/Kolkata';
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
@@ -664,13 +666,26 @@ const createLink = (appointment) => {
 
                         console.log(response.data.hangoutLink);
                         appointment['consultationLink'] = response.data.hangoutLink;
+                        
                         (async () => {
                             const newAppointment = await Appointment.findById(appointment.id);
                             console.log(appointment);
                             newAppointment.overwrite(appointment);
                             await newAppointment.save();
                         })();
-                        
+
+                        // SEND MAIL TO PATIENT & DOCTOR
+                        const sub = 'Appointment Confirmation';
+                        const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+
+                        try {
+                            sendMail(patientEmail, sub, text);
+                            sendMail(doctorEmail, sub, text2);
+                        } catch (err) {
+                            console.log(err);
+                        }
+
                         return console.log('Calendar event successfully created.')
                     }
                 );
