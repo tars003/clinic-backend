@@ -46,6 +46,7 @@ const getDate = () => {
 const cancelTime = 720;
 const rescheduleTime = 240;
 
+// GET STARTING TIME FOR APPOINTMENT FROM SLOT
 const getAppTime = (date, slot) => {
     const startTime = slot.split(' - ')[0];
     let appointmentTime = moment(
@@ -316,18 +317,20 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
         const appointmentData = await Appointment.findById(appointmentId);
         var date = appointmentData.date;
         var isActive = false;
+        var coupon;
+
         // coupon validity
         if (appointmentData.coupon == 'NONE') {
             isActive = true;
         }
         else {
-            const coupon = await Coupon.findById(appointmentData.coupon);
+            coupon = await Coupon.findById(appointmentData.coupon);
             isActive = coupon.isActive;
         }
         // checking if the appointment object in db actually exists
         if (appointmentData) {
             // checking if the coupon code is still active
-            if (isActive) {
+            if (isActive && isCouponValid(coupon)) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
@@ -422,8 +425,8 @@ router.post('/get-invoice', auth, async (req, res) => {
                 percentOff: 100
             }
         }
-        //  The coupon present should have isActuve true in db
-        if (coupon.isActive) {
+        //  The coupon present should have isActive true in db
+        if (coupon.isActive && isCouponValid(coupon)) {
             const daySchedule = await Schedule.findById(appointmentData.date);
             //  Schedule for the date in request exists
             if (daySchedule) {
@@ -562,6 +565,18 @@ router.post('/get-invoice', auth, async (req, res) => {
                         daySchedule1['slots'] = newSchedule
                         daySchedule1.overwrite(daySchedule1);
                         daySchedule1.save();
+
+                        // UPDATING PATIENS ARR INSIDE COUPON 
+                        //  FOR 1 TIME USE 
+                        if(!coupon.isOneTime) {
+                            coupon.patients.push({
+                                _id: patient.id,
+                                appointmentId: appointment.id
+                            });
+                            const newCoupon = await Coupon.findById(coupon.id);
+                            newCoupon.overwrite(coupon);
+                            await newCoupon.save();
+                        }
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         createLink(appointment, doctorData.email, patient.email);
@@ -729,6 +744,14 @@ const confirmPayment = (orderId, paymentId, sig) => {
     
     if(sig===generated_signature) return true
     else return false;
+}
+
+const isCouponValid = async (coupon) => {
+    const currDate = getDate();
+    const start = moment(coupon.startDate, 'DD-MM-YY');
+    const end = moment(coupon.endDate, 'DD-MM-YY');
+    const flag = currDate.diff(start, 'days') >= 0 && currDate.diff(end, 'days') < 0 ? true : false
+    return flag;
 }
 
 

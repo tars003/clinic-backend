@@ -24,7 +24,9 @@ router.post('/create', auth, async (req, res) => {
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         const {
             code,
-            percentOff
+            percentOff,
+            startDate,
+            endDate
         } = obj;
 
         const c = await Coupon.findById(code);
@@ -38,7 +40,9 @@ router.post('/create', auth, async (req, res) => {
         let coupon = await Coupon.create({
             _id: code,
             percentOff,
-            isActive: true
+            isActive: true,
+            startDate,
+            endDate
         });
 
         return res.status(200).json({

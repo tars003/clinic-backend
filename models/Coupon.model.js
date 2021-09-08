@@ -6,7 +6,19 @@ const CouponSchema = new mongoose.Schema({
     isActive: {
         type: Boolean,
         default: true
-    }
+    },
+    startDate: String,
+    endDate: String,
+    isOneTime: {
+        type: Boolean,
+        default: false
+    },
+    patients : [
+        {
+            _id: String,
+            appointmentId: String
+        }
+    ]
 })
 
 module.exports = mongoose.model("coupon", CouponSchema);
