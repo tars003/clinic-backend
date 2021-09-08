@@ -426,7 +426,7 @@ router.post('/get-invoice', auth, async (req, res) => {
             }
         }
         //  The coupon present should have isActive true in db
-        if (coupon.isActive && isCouponValid(coupon)) {
+        if (coupon.isActive && isCouponValid(coupon) && isCouponApplicable(coupon, appointmentData['patientId'])) {
             const daySchedule = await Schedule.findById(appointmentData.date);
             //  Schedule for the date in request exists
             if (daySchedule) {
@@ -751,6 +751,17 @@ const isCouponValid = async (coupon) => {
     const start = moment(coupon.startDate, 'DD-MM-YY');
     const end = moment(coupon.endDate, 'DD-MM-YY');
     const flag = currDate.diff(start, 'days') >= 0 && currDate.diff(end, 'days') < 0 ? true : false
+    return flag;
+}
+
+const isCouponApplicable = async (coupon, patientId) => {
+    let flag = false;
+    if(coupon.exclusivePatients.length > 0) {
+        if(coupon.exclusivePatients.includes(patientId))
+            flag = true;
+    } else {
+        flag = true
+    }
     return flag;
 }
 

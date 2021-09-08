@@ -58,6 +58,43 @@ router.post('/create', auth, async (req, res) => {
     }
 });
 
+
+// CREATE A COUPON
+router.post('/add-patients/:couponId', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            patients,
+        } = obj;
+        let c = await Coupon.findById(req.params.couponId);
+        if(!c) {
+            return res.status(400).json({
+                success: false,
+                message: 'no coupon found '
+            });
+        }
+        let pArr = patients.map(patient => ({_id: patient}))
+        c.exclusivePatients = [...c.exclusivePatients, ...patients];
+        // console.log(c);
+        await c.save();
+
+        return res.status(200).json({
+            success: true,
+            coupon: c
+        })
+
+
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
 // SEE ALL COUPONS
 router.get('/get-all', auth, async (req, res) => {
     try {

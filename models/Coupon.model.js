@@ -18,6 +18,9 @@ const CouponSchema = new mongoose.Schema({
             _id: String,
             appointmentId: String
         }
+    ],
+    exclusivePatients : [
+        String
     ]
 })
 
