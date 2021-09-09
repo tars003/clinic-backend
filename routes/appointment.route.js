@@ -422,11 +422,15 @@ router.post('/get-invoice', auth, async (req, res) => {
             coupon = {
                 _id: 'NONE',
                 isActive: true,
-                percentOff: 100
+                percentOff: 0
             }
         }
         //  The coupon present should have isActive true in db
-        if (coupon.isActive && isCouponValid(coupon) && isCouponApplicable(coupon, appointmentData['patientId'])) {
+        console.log('is cpoupon Applicable')
+        console.log(isCouponApplicable(coupon, appointmentData['patientId']));
+        console.log('isCouponValid');
+        console.log(isCouponValid(coupon, appointmentData.date));
+        if (coupon.isActive && isCouponValid(coupon, appointmentData.date) && isCouponApplicable(coupon, appointmentData['patientId'])) {
             const daySchedule = await Schedule.findById(appointmentData.date);
             //  Schedule for the date in request exists
             if (daySchedule) {
@@ -450,7 +454,9 @@ router.post('/get-invoice', auth, async (req, res) => {
                         // PACKAGE CONSULTATIONS UTILIZATION
                         const patient = await Patient.findById(req.body.data.id);
                         // calculating fees based on the coupon object retrieved from db
-                        var fee = doctorData.fee * (coupon.percentOff / 100);
+                        console.log('beforeFee', doctorData.fee);
+                        var fee = doctorData.fee * ((100-coupon.percentOff) / 100);
+                        console.log('afterFee', fee);
                         var info = {};
                         console.log(req.body);
                         // CHECKING FOR PACKAGE & NUMBER OF CINSULTATIONS LEFT FOR THE PROFILE
@@ -530,6 +536,8 @@ router.post('/get-invoice', auth, async (req, res) => {
                         appointmentData['coupon'] = coupon;
                         appointmentData['info'] = info;
                         delete appointmentData.data;
+                        // console.log('appointmentData')
+                        // console.log(appointmentData);
                         let appointment = await Appointment.create(appointmentData);
 
                         // CREATE A RAZORPAY ORDER
@@ -541,7 +549,6 @@ router.post('/get-invoice', auth, async (req, res) => {
                         const notes = {
                             "patientName" : patient.name
                         };
-                        console
                         const order = await createOrder(fee, currency, receipt, notes);
                         if (order.id) {
                             appointment['orderId'] = order.id;
@@ -575,6 +582,8 @@ router.post('/get-invoice', auth, async (req, res) => {
                             });
                             const newCoupon = await Coupon.findById(coupon.id);
                             newCoupon.overwrite(coupon);
+                            // console.log('newCoupon');
+                            // console.log(newCoupon);
                             await newCoupon.save();
                         }
 
@@ -746,22 +755,39 @@ const confirmPayment = (orderId, paymentId, sig) => {
     else return false;
 }
 
-const isCouponValid = async (coupon) => {
-    const currDate = getDate();
-    const start = moment(coupon.startDate, 'DD-MM-YY');
-    const end = moment(coupon.endDate, 'DD-MM-YY');
+const isCouponValid =  (coupon, appDate) => {
+    const currDate = moment(appDate, 'DD-MM-YYYY');
+    const start = moment(coupon.startDate, 'DD-MM-YYYY');
+    const end = moment(coupon.endDate, 'DD-MM-YYYY');
+    // console.log(currDate.diff(end, 'days'));
+    // console.log(currDate.diff(start, 'days'));
     const flag = currDate.diff(start, 'days') >= 0 && currDate.diff(end, 'days') < 0 ? true : false
     return flag;
 }
 
-const isCouponApplicable = async (coupon, patientId) => {
+const isCouponApplicable =  (coupon, patientId) => {
     let flag = false;
     if(coupon.exclusivePatients.length > 0) {
         if(coupon.exclusivePatients.includes(patientId))
             flag = true;
+        else
+            return flag
     } else {
-        flag = true
+        
     }
+    if(coupon.patients.length > 0) {
+        const patientIds = coupon.patients.map(obj => obj.id);
+        console.log('patientIds');
+        console.log(patientIds);
+        if(patientIds.includes(patientId)) {
+            flag = false
+            console.log('coupon already used')
+        }
+        else 
+            flag = true
+    }
+    else
+        flag = true;
     return flag;
 }
 
