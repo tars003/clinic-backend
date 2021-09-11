@@ -575,17 +575,22 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         // UPDATING PATIENS ARR INSIDE COUPON 
                         //  FOR 1 TIME USE 
-                        if(!coupon.isOneTime) {
-                            coupon.patients.push({
-                                _id: patient.id,
-                                appointmentId: appointment.id
-                            });
-                            const newCoupon = await Coupon.findById(coupon.id);
-                            newCoupon.overwrite(coupon);
-                            // console.log('newCoupon');
-                            // console.log(newCoupon);
-                            await newCoupon.save();
+                        if(coupon.percentOff == 0){
+                            
+                        } else {
+                            if(!coupon.isOneTime) {
+                                coupon.patients.push({
+                                    _id: patient.id,
+                                    appointmentId: appointment.id
+                                });
+                                const newCoupon = await Coupon.findById(coupon.id);
+                                newCoupon.overwrite(coupon);
+                                // console.log('newCoupon');
+                                // console.log(newCoupon);
+                                await newCoupon.save();
+                            }
                         }
+                        
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         createLink(appointment, doctorData.email, patient.email);
