@@ -330,7 +330,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
         // checking if the appointment object in db actually exists
         if (appointmentData) {
             // checking if the coupon code is still active
-            if (isActive && isCouponValid(coupon)) {
+            if (isActive && isCouponValid(coupon, date)) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
