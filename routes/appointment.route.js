@@ -330,7 +330,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
         // checking if the appointment object in db actually exists
         if (appointmentData) {
             // checking if the coupon code is still active
-            if (isActive && isCouponValid(coupon, date)) {
+            if (isActive ) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
@@ -767,11 +767,14 @@ const isCouponValid =  (coupon, appDate) => {
 
 const isCouponApplicable =  (coupon, patientId) => {
     let flag = false;
-    if(coupon.exclusivePatients.length > 0) {
-        if(coupon.exclusivePatients.includes(patientId))
-            flag = true;
-        else
-            return flag
+    if(coupon.exclusivePatients) {
+        if(coupon.exclusivePatients.length > 0) {
+            if(coupon.exclusivePatients.includes(patientId))
+                flag = true;
+            else
+                return flag
+        }
+        
     } else {
         
     }
