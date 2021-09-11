@@ -757,7 +757,7 @@ const confirmPayment = (orderId, paymentId, sig) => {
 
 const isCouponValid =  (coupon, appDate) => {
 
-    if(!coupon) {
+    if(coupon.percentOff == 0) {
         return true;
     }
 
@@ -772,7 +772,7 @@ const isCouponValid =  (coupon, appDate) => {
 
 const isCouponApplicable =  (coupon, patientId) => {
 
-    if(!coupon) {
+    if(coupon.percentOff == 0) {
         return true;
     }
 
