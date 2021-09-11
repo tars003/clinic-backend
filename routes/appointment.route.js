@@ -778,19 +778,22 @@ const isCouponApplicable =  (coupon, patientId) => {
     } else {
         
     }
-    if(coupon.patients.length > 0) {
-        const patientIds = coupon.patients.map(obj => obj.id);
-        console.log('patientIds');
-        console.log(patientIds);
-        if(patientIds.includes(patientId)) {
-            flag = false
-            console.log('coupon already used')
+    if(coupon.patients) {
+        if(coupon.patients.length > 0) {
+            const patientIds = coupon.patients.map(obj => obj.id);
+            console.log('patientIds');
+            console.log(patientIds);
+            if(patientIds.includes(patientId)) {
+                flag = false
+                console.log('coupon already used')
+            }
+            else 
+                flag = true
         }
-        else 
-            flag = true
+        else
+            flag = true;
     }
-    else
-        flag = true;
+    
     return flag;
 }
 
