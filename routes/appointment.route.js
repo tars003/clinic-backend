@@ -78,7 +78,7 @@ router.get('/get/past-appointments/:id', auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(503).json({
-            sucess: false,
+            success: false,
             message: 'Server error'
         })
     }
@@ -219,7 +219,7 @@ router.post('/reschedule', auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(503).json({
-            sucess: false,
+            success: false,
             message: 'Server error'
         })
     }
@@ -281,7 +281,7 @@ router.get('/cancel/:appointmentId', auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(503).json({
-            sucess: false,
+            success: false,
             message: 'Server error'
         })
     }
@@ -398,7 +398,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(503).json({
-            sucess: false,
+            success: false,
             message: 'Server error'
         })
     }
@@ -625,7 +625,7 @@ router.post('/get-invoice', auth, async (req, res) => {
     } catch (err) {
         console.log(err);
         res.status(503).json({
-            sucess: false,
+            success: false,
             message: 'Server error'
         })
     }
@@ -756,6 +756,11 @@ const confirmPayment = (orderId, paymentId, sig) => {
 }
 
 const isCouponValid =  (coupon, appDate) => {
+
+    if(!coupon) {
+        return true;
+    }
+
     const currDate = moment(appDate, 'DD-MM-YYYY');
     const start = moment(coupon.startDate, 'DD-MM-YYYY');
     const end = moment(coupon.endDate, 'DD-MM-YYYY');
@@ -766,6 +771,11 @@ const isCouponValid =  (coupon, appDate) => {
 }
 
 const isCouponApplicable =  (coupon, patientId) => {
+
+    if(!coupon) {
+        return true;
+    }
+
     let flag = false;
     if(coupon.exclusivePatients) {
         if(coupon.exclusivePatients.length > 0) {
