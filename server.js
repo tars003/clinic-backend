@@ -21,6 +21,7 @@ app.use("/server/schedule", require('./routes/schedule.route'));
 app.use("/server/doctor", require('./routes/doctor.route'));
 app.use("/server/inventory", require('./routes/product.route'));
 app.use("/server/coupon", require('./routes/coupon.route'));
+app.use("/server/package-coupon", require('./routes/packageCoupon.route'));
 app.use("/server/notify", require('./routes/notification.route'));
 
 var storage = multer.diskStorage({

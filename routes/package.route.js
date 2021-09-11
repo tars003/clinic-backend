@@ -9,7 +9,11 @@ const Schedule = require('../models/Schedule.model');
 const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
 const Package = require('../models/Package.model');
+const PackageCoupon = require('../models/PackageCoupon.model');
 
+
+const { createOrder, confirmPayment } = require('../util/rzp');
+const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 const auth = require('../middleware/auth');
 
 const getDate = () => {
@@ -46,7 +50,7 @@ router.post('/create', auth, async (req, res) => {
             success: true,
             data: package
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -74,13 +78,13 @@ router.post('/edit/:id', auth, async (req, res) => {
 
         let package = await Package.findById(req.params.id);
 
-        package['name']= name || package.name;
-        package['patientType']= patientType || package.patientType;
-        package['description']= description || package.description;
-        package['consultations']= consultations || package.consultations;
-        package['validity']= validity || package.validity;
-        package['price']= price || package.price;
-        package['isIndian']= isIndian || package.isIndia;
+        package['name'] = name || package.name;
+        package['patientType'] = patientType || package.patientType;
+        package['description'] = description || package.description;
+        package['consultations'] = consultations || package.consultations;
+        package['validity'] = validity || package.validity;
+        package['price'] = price || package.price;
+        package['isIndian'] = isIndian || package.isIndia;
 
         console.log('old package')
         console.log(package);
@@ -93,7 +97,7 @@ router.post('/edit/:id', auth, async (req, res) => {
             success: true,
             data: newPackage
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -103,7 +107,7 @@ router.post('/edit/:id', auth, async (req, res) => {
 });
 
 // REMOVE A PACKAGE
-router.get('/remove/:id', auth, async(req, res) => {
+router.get('/remove/:id', auth, async (req, res) => {
     try {
         const package = await Package.findById(req.params.id);
         // console.log(packages);
@@ -112,7 +116,7 @@ router.get('/remove/:id', auth, async(req, res) => {
             success: true,
             message: 'package removed'
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -134,7 +138,7 @@ router.get('/view-package', auth, async (req, res) => {
             length: packages.length,
             data: packages
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -161,7 +165,7 @@ router.get('/my-package', auth, async (req, res) => {
                 ...patient.profiles
             ]
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -172,18 +176,128 @@ router.get('/my-package', auth, async (req, res) => {
 
 
 // ADD PACKAGE TO PATIENT
-router.post('/buy-package/:packageId', auth, async (req, res) => {
+router.post('/invoice/buy-package/:packageId', auth, async (req, res) => {
     try {
+        var coupon = await PackageCoupon.findById(req.body.coupon);
+        // if no coupon present in request
+        if (!coupon) {
+            coupon = {
+                _id: 'NONE',
+                isActive: true,
+                percentOff: 0
+            }
+        }
+        console.log('coupon', coupon);
+        const currDate = getDate().format('DD-MM-YYYY');
+
+        // CHECKING FOR THE VALIDITY AND APPLICABLITY OF COUPON
+        if (coupon.isActive && isCouponValid(coupon, currDate) && isCouponApplicable(coupon, req.body.data.id)) {
+
+            // QUERYING FOR THE PATIENT OBJECT FROM DB
+            let patient = await Patient.findById(req.body.data.id);
+            if (!patient) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No user with found corresponding auth token'
+                });
+            }
+            let profile, packageInitial;
+            // RETREIVING CURRENT PACKAGE DATA FROM PATIENT SUB PROFILE
+            if (req.body.profileId) {
+                if (req.body.profileId == patient.id) {
+                    packageInitial = patient.package;
+                }
+                else {
+                    profile = patient.profiles.filter((profile) => profile.id == req.body.profileId);
+                    console.log(profile[0]);
+                    packageInitial = profile[0].package;
+                }
+            }
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: "No profile id found"
+                })
+            }
+
+            // If current package validity has not expired
+            if (typeof packageInitial != "undefined") {
+                let validTill = moment(Date.parse(packageInitial.validTill));
+                let currDate = getDate();
+                console.log(currDate.diff(validTill));
+                if (packageInitial.consultationsLeft <= 0) {
+                    console.log('adding new package to patient, all consultation of current package used')
+                }
+                else if (currDate.diff(validTill) < 0) {
+                    return res.status(400).json({
+                        success: false,
+                        message: 'Patient already has an active package'
+                    })
+                }
+            }
+
+            // FORMATTING PACKAGE DATA TO BE SAVED IN PATIENT PROFILE/SUB PROFILE
+            let package = await Package.findById(req.params.packageId);
+            if (!package) {
+                return res.status(404).json({
+                    success: false,
+                    message: 'No package with found corresponding auth token'
+                });
+            }
+
+            var packagePrice = package.price * ((100 - coupon.percentOff) / 100);
+            console.log('packagePrice', packagePrice);
+            // APPLYING COUPON DISCOUNT
+            var curr = ''
+            if (!package.isIndian || package.isIndian == true) {
+                curr = 'INR'
+            } else {
+                curr = 'USD'
+            }
+            return res.status(200).json({
+                success: true,
+                data: {
+                    _id: package.id,
+                    beforePrice: package.price,
+                    afterPrice: packagePrice,
+                    currency: curr,
+                    coupon: coupon.id
+                }
+            })
+
+        } else {
+            console.log('Coupon either expired or not valid');
+            return res.status(400).json({
+                success: false,
+                message: 'Coupon either expired or not valid'
+            })
+        }
+
+
+    } catch (err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+// ADD PACKAGE TO PATIENT
+router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
+    try {
+        // QUERYING FOR THE PATIENT OBJECT FROM DB
         let patient = await Patient.findById(req.body.data.id);
-        if(!patient){
+        if (!patient) {
             return res.status(404).json({
                 success: false,
                 message: 'No user with found corresponding auth token'
             });
         }
         let profile, packageInitial;
-        if(req.body.profileId){
-            if(req.body.profileId == patient.id){
+        // RETREIVING CURRENT PACKAGE DATA FROM PATIENT SUB PROFILE
+        if (req.body.profileId) {
+            if (req.body.profileId == patient.id) {
                 packageInitial = patient.package;
             }
             else {
@@ -200,14 +314,14 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
         }
 
         // If current package validity has not expired
-        if(typeof packageInitial != "undefined"){
+        if (typeof packageInitial != "undefined") {
             let validTill = moment(Date.parse(packageInitial.validTill));
             let currDate = getDate();
             console.log(currDate.diff(validTill));
-            if(packageInitial.consultationsLeft <= 0) {
+            if (packageInitial.consultationsLeft <= 0) {
                 console.log('adding new package to patient, all consultation of current package used')
             }
-            else if(currDate.diff(validTill) < 0 ){
+            else if (currDate.diff(validTill) < 0) {
                 return res.status(400).json({
                     success: false,
                     message: 'Patient already has an active package'
@@ -215,8 +329,9 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
             }
         }
 
+        // FORMATTING PACKAGE DATA TO BE SAVED IN PATIENT PROFILE/SUB PROFILE
         let package = await Package.findById(req.params.packageId);
-        if(!package){
+        if (!package) {
             return res.status(404).json({
                 success: false,
                 message: 'No package with found corresponding auth token'
@@ -230,10 +345,10 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
             validTill: getDate().add(package.validity, 'days')
         }
 
-        if(req.body.profileId != patient.id){
-
+        // SAVING PACKAGE IN PATIENT SUB PROFILE
+        if (req.body.profileId != patient.id) {
             let profileArr = patient.profiles.map(profile => {
-                if(profile.id == req.body.profileId){
+                if (profile.id == req.body.profileId) {
                     profile['package'] = data;
                 }
                 return profile;
@@ -251,6 +366,7 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
                 data: newPatient
             });
         }
+        // SAVING PACKAGE IN PATIENT MAIN PROFILE
         else {
             patient['package'] = data;
             console.log(patient);
@@ -264,7 +380,10 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
                 data: newPatient
             });
         }
-    } catch(err) {
+
+
+
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -272,6 +391,7 @@ router.post('/buy-package/:packageId', auth, async (req, res) => {
         });
     }
 });
+
 
 
 module.exports = router;

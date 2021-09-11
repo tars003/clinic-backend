@@ -1,9 +1,7 @@
 const { Router } = require('express');
 const jwt = require('jsonwebtoken');
 const moment = require('moment');
-const Razorpay = require('razorpay'); 
 const router = Router();
-const crypto = require('crypto');
 
 const Appointment = require('../models/Appointment.model');
 const Patient = require('../models/Patient.model.js');
@@ -12,7 +10,9 @@ const Coupon = require('../models/Coupon.model');
 const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots')
-const {sendMail} = require('../util/mail');
+const { sendMail } = require('../util/mail');
+const { createOrder, confirmPayment } = require('../util/rzp');
+const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 
 // Require google from googleapis package.
 const { google } = require('googleapis');
@@ -25,13 +25,6 @@ const oAuth2Client = new OAuth2(
     process.env.ACCESS_ID,
     process.env.ACCESS_SECRET
 )
-
-
-const razorpayInstance = new Razorpay({
-    key_id: process.env.RP_ID,
-    key_secret: process.env.RP_SECRET,
-});
-
 
 // Call the setCredentials method on our oAuth2Client instance and set our refresh token.
 
@@ -330,7 +323,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
         // checking if the appointment object in db actually exists
         if (appointmentData) {
             // checking if the coupon code is still active
-            if (isActive ) {
+            if (isActive) {
                 const daySchedule = await Schedule.findById(appointmentData.date);
                 const checkSlot = (slot) => {
                     return slot.slot == appointmentData.timeSlot
@@ -352,7 +345,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         // updating appointment payment status to COMPLETE
                         var appointment = await Appointment.findById(appointmentId);
 
-                        var {orderId, paymentId} = req.body;
+                        var { orderId, paymentId } = req.body;
                         const sig = req.get('x-razorpay-signature');
                         const status = confirmPayment(orderId, paymentId, sig);
                         if (status) {
@@ -360,7 +353,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         } else {
                             appointment['paymentStatus'] = 'FAILED';
                         }
-                        
+
                         var newAppointment = await Appointment.findById(appointmentId);
                         newAppointment.overwrite(appointment);
                         await newAppointment.save();
@@ -455,7 +448,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         const patient = await Patient.findById(req.body.data.id);
                         // calculating fees based on the coupon object retrieved from db
                         console.log('beforeFee', doctorData.fee);
-                        var fee = doctorData.fee * ((100-coupon.percentOff) / 100);
+                        var fee = doctorData.fee * ((100 - coupon.percentOff) / 100);
                         console.log('afterFee', fee);
                         var info = {};
                         console.log(req.body);
@@ -542,12 +535,12 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         // CREATE A RAZORPAY ORDER
                         let currency = 'INR';
-                        if(patient.isIndian != undefined) {
+                        if (patient.isIndian != undefined) {
                             currency = patient.isIndian ? 'INR' : 'USD';
                         }
                         const receipt = randomStr(10, '123465789abcdefgh');
                         const notes = {
-                            "patientName" : patient.name
+                            "patientName": patient.name
                         };
                         const order = await createOrder(fee, currency, receipt, notes);
                         if (order.id) {
@@ -575,10 +568,10 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         // UPDATING PATIENS ARR INSIDE COUPON 
                         //  FOR 1 TIME USE 
-                        if(coupon.percentOff == 0){
-                            
+                        if (coupon.percentOff == 0) {
+
                         } else {
-                            if(!coupon.isOneTime) {
+                            if (!coupon.isOneTime) {
                                 coupon.patients.push({
                                     _id: patient.id,
                                     appointmentId: appointment.id
@@ -590,7 +583,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                                 await newCoupon.save();
                             }
                         }
-                        
+
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         createLink(appointment, doctorData.email, patient.email);
@@ -695,7 +688,7 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
 
                         console.log(response.data.hangoutLink);
                         appointment['consultationLink'] = response.data.hangoutLink;
-                        
+
                         (async () => {
                             const newAppointment = await Appointment.findById(appointment.id);
                             console.log(appointment);
@@ -731,85 +724,10 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
 const randomStr = (len, arr) => {
     var ans = '';
     for (var i = len; i > 0; i--) {
-        ans += 
-          arr[Math.floor(Math.random() * arr.length)];
+        ans +=
+            arr[Math.floor(Math.random() * arr.length)];
     }
     return ans;
-}
-
-const createOrder = async (amount, currency, receipt, notes) => {
-    try {
-        const fee = amount*100;
-        console.log('Creating rzp order');
-        console.log(fee, currency, receipt, notes);
-        const order = await razorpayInstance.orders.create({amount: fee, currency, receipt, notes});
-        return order;
-    } catch (err) {
-        console.log('error creating rzp order');
-        console.log(err);
-        return ({});
-    }
-}
-
-const confirmPayment = (orderId, paymentId, sig) => {
-    let hmac = crypto.createHmac('sha256', process.env.RP_SECRET); 
-    hmac.update(orderId + "|" + paymentId);
-    const generated_signature = hmac.digest('hex');
-    
-    if(sig===generated_signature) return true
-    else return false;
-}
-
-const isCouponValid =  (coupon, appDate) => {
-
-    if(coupon.percentOff == 0) {
-        return true;
-    }
-
-    const currDate = moment(appDate, 'DD-MM-YYYY');
-    const start = moment(coupon.startDate, 'DD-MM-YYYY');
-    const end = moment(coupon.endDate, 'DD-MM-YYYY');
-    // console.log(currDate.diff(end, 'days'));
-    // console.log(currDate.diff(start, 'days'));
-    const flag = currDate.diff(start, 'days') >= 0 && currDate.diff(end, 'days') < 0 ? true : false
-    return flag;
-}
-
-const isCouponApplicable =  (coupon, patientId) => {
-
-    if(coupon.percentOff == 0) {
-        return true;
-    }
-
-    let flag = false;
-    if(coupon.exclusivePatients) {
-        if(coupon.exclusivePatients.length > 0) {
-            if(coupon.exclusivePatients.includes(patientId))
-                flag = true;
-            else
-                return flag
-        }
-        
-    } else {
-        
-    }
-    if(coupon.patients) {
-        if(coupon.patients.length > 0) {
-            const patientIds = coupon.patients.map(obj => obj.id);
-            console.log('patientIds');
-            console.log(patientIds);
-            if(patientIds.includes(patientId)) {
-                flag = false
-                console.log('coupon already used')
-            }
-            else 
-                flag = true
-        }
-        else
-            flag = true;
-    }
-    
-    return flag;
 }
 
 
