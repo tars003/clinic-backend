@@ -56,6 +56,12 @@ const AppointmentSchema = mongoose.Schema({
         type: String,
         required: false
     },
+    followPerforma: [
+        {
+            _id: String,
+            value:String
+        }
+    ],
 })
 
 module.exports = mongoose.model("appointment", AppointmentSchema);

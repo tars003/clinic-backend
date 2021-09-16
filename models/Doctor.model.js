@@ -53,6 +53,12 @@ const DoctorSchema = new mongoose.Schema({
             description:String
         }
     ],
+    followPerforma: [
+        {
+            _id: String,
+            description:String
+        }
+    ],
     fee : Number
 })
 

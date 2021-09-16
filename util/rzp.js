@@ -30,6 +30,15 @@ const confirmPayment = (orderId, paymentId, sig) => {
     else return false;
 }
 
-module.exports = {confirmPayment, createOrder}
+const randomStr = (len, arr) => {
+    var ans = '';
+    for (var i = len; i > 0; i--) {
+        ans +=
+            arr[Math.floor(Math.random() * arr.length)];
+    }
+    return ans;
+}
+
+module.exports = {confirmPayment, createOrder, randomStr}
 
 

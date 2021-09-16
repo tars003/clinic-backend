@@ -55,6 +55,7 @@ router.post('/create', auth, async (req, res) => {
     }
 });
 
+
 // GET PERFORMA STRUCTURE OF A DOCTOR
 router.get('/get-performa-struct', auth, async (req, res) => {
     try {
@@ -144,7 +145,6 @@ router.post('/set', auth, async (req, res) => {
     }
 });
 
-
 // GET PATIENT'S PERFORMA
 router.get('/get-performa', auth, async (req, res) => {
     try {
@@ -167,6 +167,136 @@ router.get('/get-performa', auth, async (req, res) => {
                 }
             })
         }
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
+
+// CREATE PERFORMA STRUCTURE FOR A DOCTOR
+router.post('/follow/create', auth, async (req, res) => {
+    try {
+        var doctor = await Doctor.find();
+        doctor = doctor[0];
+
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        console.log(obj);
+
+        var performaKeys = Object.keys(obj);
+        performaKeys = performaKeys.filter(i => i != "data");
+        performa = performaKeys.map(key => {
+            let res = {};
+            res['_id'] = key;
+            res['description'] = obj[key];
+            // res[`${key}`] = obj[key];
+            return res;
+        });
+
+        console.log(performa)
+
+        doctor['followPerforma'] = performa;
+
+        var newDoctor = await Doctor.find();
+        newDoctor = newDoctor[0];
+
+        newDoctor.overwrite(doctor);
+        await newDoctor.save();
+
+        return res.status(200).json({
+            success: true,
+            data: doctor
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+// GET PERFORMA STRUCTURE OF A DOCTOR
+router.get('/follow/get-performa-struct', auth, async (req, res) => {
+    try {
+        var doctor = await Doctor.find();
+        doctor = doctor[0];
+        console.log(doctor);
+        return res.status(200).json({
+            success: true,
+            data: doctor.followPerforma
+        })
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+// CREATE PERFORMA FOR PATIENT
+router.post('/follow/set/:appId', auth, async (req, res) => {
+    try {
+        const appointment = await Appointment.findById(req.params.appId);
+
+        if(!appointment) {
+            return res.status(400).json({
+                success: false,
+                message: 'No appointment found with given id'
+            })
+        }
+
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        console.log(obj);
+
+        var performaKeys = Object.keys(obj);
+        performaKeys = performaKeys.filter(i => i != "data");
+        performa = performaKeys.map(key => {
+            let res = {};
+            res['_id'] = key;
+            res['value'] = obj[key];
+            return res;
+        });
+
+        
+        appointment['followPerforma'] = performa;
+
+        const newAppointment = await Appointment.findById(req.params.appId);
+        newAppointment.overwrite(appointment);
+        await newAppointment.save();
+
+        return res.status(200).json({
+            success: true,
+            data: appointment
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+});
+
+
+// GET PATIENT'S PERFORMA
+router.get('/follow/get-performa/:appId', auth, async (req, res) => {
+    try {
+        const appointment = await Appointment.findById(req.params.appId);
+        // console.log(appointment);
+        
+        return res.status(200).json({
+            success: true,
+            data: appointment.followPerforma
+        });
+
     } catch(err) {
         console.log(err);
         return res.status(503).json({

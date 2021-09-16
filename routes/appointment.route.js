@@ -11,7 +11,7 @@ const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots')
 const { sendMail } = require('../util/mail');
-const { createOrder, confirmPayment } = require('../util/rzp');
+const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 
 // Require google from googleapis package.
@@ -629,6 +629,10 @@ router.post('/get-invoice', auth, async (req, res) => {
     }
 });
 
+
+
+
+
 const createLink = (appointment, doctorEmail, patientEmail) => {
     const timeZone = 'Asia/Kolkata';
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
@@ -721,14 +725,7 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
 
 }
 
-const randomStr = (len, arr) => {
-    var ans = '';
-    for (var i = len; i > 0; i--) {
-        ans +=
-            arr[Math.floor(Math.random() * arr.length)];
-    }
-    return ans;
-}
+
 
 
 
