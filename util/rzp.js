@@ -9,6 +9,7 @@ const razorpayInstance = new Razorpay({
 
 const createOrder = async (amount, currency, receipt, notes) => {
     try {
+        console.log(amount, currency);
         const fee = amount*100;
         console.log('Creating rzp order');
         console.log(fee, currency, receipt, notes);

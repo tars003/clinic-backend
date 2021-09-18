@@ -410,6 +410,7 @@ router.post('/get-invoice', auth, async (req, res) => {
         appointmentData['docId'] = doctorData.id;
         // getting coupon object from db
         var coupon = await Coupon.findById(appointmentData.coupon);
+        console.log('cpouoon', coupon);
         // if no coupon present in request
         if (!coupon) {
             coupon = {
@@ -449,6 +450,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         // calculating fees based on the coupon object retrieved from db
                         console.log('beforeFee', doctorData.fee);
                         var fee = doctorData.fee * ((100 - coupon.percentOff) / 100);
+                        var isPackageUsed = false;
                         console.log('afterFee', fee);
                         var info = {};
                         console.log(req.body);
@@ -469,6 +471,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                                     var consultations = patient.package.consultationsLeft;
                                     // If his current package has some consultations left
                                     if (consultations > 0) {
+                                        isPackageUsed = true;
                                         console.log('inside consultations 0')
                                         fee = 0;
                                         patient.package.consultationsLeft = consultations - 1;
@@ -496,6 +499,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                                     var consultations = profile.package.consultationsLeft;
                                     // If his current package has some consultations left
                                     if (consultations > 0) {
+                                        isPackageUsed = true;
                                         console.log('inside consultations 0')
                                         fee = 0;
                                         profile.package.consultationsLeft = consultations - 1;
@@ -542,12 +546,25 @@ router.post('/get-invoice', auth, async (req, res) => {
                         const notes = {
                             "patientName": patient.name
                         };
-                        const order = await createOrder(fee, currency, receipt, notes);
-                        if (order.id) {
-                            appointment['orderId'] = order.id;
-                            appointment['receipt'] = order.receipt;
+
+                        var order;
+
+                        if(!isPackageUsed) {
+                            order = await createOrder(fee, currency, receipt, notes);
+                            if (order.id) {
+                                appointment['orderId'] = order.id;
+                                appointment['receipt'] = order.receipt;
+                                await appointment.save();
+                            }
+                        }
+                        else {
+                            order  = {packageUsed: true};
+                            appointment['orderId'] = 'package availed';
+                            appointment['receipt'] = 'package availed';
+                            appointment['paymentStatus'] = 'COMPLETE';
                             await appointment.save();
                         }
+                        
 
 
                         //  Updating day schedule for the slot to booked
