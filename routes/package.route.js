@@ -12,7 +12,7 @@ const Package = require('../models/Package.model');
 const PackageCoupon = require('../models/PackageCoupon.model');
 
 
-const { createOrder, confirmPayment } = require('../util/rzp');
+const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 const auth = require('../middleware/auth');
 
@@ -254,6 +254,14 @@ router.post('/invoice/buy-package/:packageId', auth, async (req, res) => {
             } else {
                 curr = 'USD'
             }
+
+            const receipt = randomStr(10, '123465789abcdefgh');
+            const notes = {
+                "patientName": patient.name
+            };
+            const order = await createOrder(packagePrice, curr, receipt, notes);
+
+
             return res.status(200).json({
                 success: true,
                 data: {
@@ -261,7 +269,8 @@ router.post('/invoice/buy-package/:packageId', auth, async (req, res) => {
                     beforePrice: package.price,
                     afterPrice: packagePrice,
                     currency: curr,
-                    coupon: coupon.id
+                    coupon: coupon.id,
+                    order,
                 }
             })
 
@@ -345,43 +354,51 @@ router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
             validTill: getDate().add(package.validity, 'days')
         }
 
-        // SAVING PACKAGE IN PATIENT SUB PROFILE
-        if (req.body.profileId != patient.id) {
-            let profileArr = patient.profiles.map(profile => {
-                if (profile.id == req.body.profileId) {
-                    profile['package'] = data;
-                }
-                return profile;
-            });
-            // console.log(profileArr);
-            patient['profiles'] = profileArr;
-            console.log(patient);
+        var { orderId, paymentId } = req.body;
+        const sig = req.get('x-razorpay-signature');
+        const status = confirmPayment(orderId, paymentId, sig);
+        if (status) {
+            // SAVING PACKAGE IN PATIENT SUB PROFILE
+            if (req.body.profileId != patient.id) {
+                let profileArr = patient.profiles.map(profile => {
+                    if (profile.id == req.body.profileId) {
+                        profile['package'] = data;
+                    }
+                    return profile;
+                });
+                // console.log(profileArr);
+                patient['profiles'] = profileArr;
+                console.log(patient);
 
-            const newPatient = await Patient.findById(patient.id);
-            newPatient.overwrite(patient);
-            await newPatient.save();
+                const newPatient = await Patient.findById(patient.id);
+                newPatient.overwrite(patient);
+                await newPatient.save();
 
-            return res.status(200).json({
-                success: true,
-                data: newPatient
-            });
+                return res.status(200).json({
+                    success: true,
+                    data: newPatient
+                });
+            }
+            // SAVING PACKAGE IN PATIENT MAIN PROFILE
+            else {
+                patient['package'] = data;
+                console.log(patient);
+
+                const newPatient = await Patient.findById(patient.id);
+                newPatient.overwrite(patient);
+                await newPatient.save();
+
+                return res.status(200).json({
+                    success: true,
+                    data: newPatient
+                });
+            }
+        } else {
+            return res.status(400).json({
+                success: false,
+                message: "payment signature invalid"
+            })
         }
-        // SAVING PACKAGE IN PATIENT MAIN PROFILE
-        else {
-            patient['package'] = data;
-            console.log(patient);
-
-            const newPatient = await Patient.findById(patient.id);
-            newPatient.overwrite(patient);
-            await newPatient.save();
-
-            return res.status(200).json({
-                success: true,
-                data: newPatient
-            });
-        }
-
-
 
     } catch (err) {
         console.log(err);

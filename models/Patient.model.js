@@ -12,7 +12,9 @@ const PatientSchema = new mongoose.Schema({
         name: String,
         consultationsLeft: Number,
         createdAt: String,
-        validTill: String
+        validTill: String,
+        orderId: String,
+        receipt: String,
     },
     performa: [
         {
@@ -29,7 +31,9 @@ const PatientSchema = new mongoose.Schema({
                 name: String,
                 consultationsLeft: Number,
                 createdAt: String,
-                validTill: String
+                validTill: String,
+                orderId: String,
+                receipt: String,
             },
             performa: [
                 {
