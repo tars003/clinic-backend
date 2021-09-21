@@ -59,8 +59,7 @@ const AppointmentSchema = mongoose.Schema({
     followPerforma: [
         {
             _id: String,
-            // value:String
-            value:String
+            description:String
         }
     ],
 })
