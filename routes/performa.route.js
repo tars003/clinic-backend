@@ -263,7 +263,8 @@ router.post('/follow/set/:appId', auth, async (req, res) => {
         performa = performaKeys.map(key => {
             let res = {};
             res['_id'] = key;
-            res['value'] = obj[key];
+            // res['value'] = obj[key];
+            res['description'] = obj[key];
             return res;
         });
 
