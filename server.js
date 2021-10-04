@@ -26,7 +26,7 @@ app.use("/server/coupon", require('./routes/coupon.route'));
 app.use("/server/package-coupon", require('./routes/packageCoupon.route'));
 app.use("/server/notify", require('./routes/notification.route'));
 
-var storage = multer.diskStorage({
+let storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, 'public/uploads')
     },
@@ -38,7 +38,7 @@ var storage = multer.diskStorage({
     }
 })
 
-var upload = multer({ storage: storage })
+let upload = multer({ storage: storage })
 
 app.post('/server/file/upload/:appointmentId', upload.single('myFile'), async (req, res, next) => {
     const file = req.file;

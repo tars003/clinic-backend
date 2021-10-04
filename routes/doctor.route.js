@@ -208,7 +208,9 @@ router.post('/edit', async (req, res) => {
 //  LOGIN ROUTE
 router.get('/get-token/:email', async (req, res) => {
     try {
-        let doctor = await Doctor.findOne({ email: req.params.email });
+        // let doctor = await Doctor.findOne({ email: req.params.email });
+        let doctor = await Doctor.find();
+        doctor = doctor[0];
         if(!doctor){
             return res.status(404).json({
                 success: false,
