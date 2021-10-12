@@ -33,7 +33,9 @@ const AppointmentSchema = mongoose.Schema({
         name: String,
         gender: String,
         age: Number,
-        phone: String
+        phone: String,
+        doctorEmail: String,
+        patientEmail: String,
     },
     prescription: {
         instructions: String,
@@ -52,10 +54,9 @@ const AppointmentSchema = mongoose.Schema({
         type: String,
         required: false
     },
-    receipt: {
-        type: String,
-        required: false
-    },
+    receipt: [
+        String,
+    ],
     followPerforma: [
         {
             _id: String,

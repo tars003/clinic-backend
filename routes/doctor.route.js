@@ -188,7 +188,7 @@ router.post('/edit', async (req, res) => {
         if (experience) doctor['experience'] = experience;
         console.log(doctor);
         let newDoctor = await Doctor.findById(doctor.id);
-        newDoctor.overwrite(doctor);
+        await newDoctor.overwrite(doctor);
         await newDoctor.save()
 
 

@@ -354,6 +354,19 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                             appointment['paymentStatus'] = 'FAILED';
                         }
 
+                        // SEND MAIL TO PATIENT & DOCTOR
+                        const sub = 'Appointment Confirmation';
+                        const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+
+                        try {
+                            sendMail(appointment['info']['patientEmail'], sub, text);
+                            sendMail(appointment['info']['doctorEmail'], sub, text2);``
+                        } catch (err) {
+                            console.log(err);
+                        }
+
+
                         var newAppointment = await Appointment.findById(appointmentId);
                         newAppointment.overwrite(appointment);
                         await newAppointment.save();
@@ -463,7 +476,9 @@ router.post('/get-invoice', auth, async (req, res) => {
                                     name: patient.name,
                                     age: patient.age,
                                     gender: patient.gender,
-                                    phone: patient.phone
+                                    phone: patient.phone,
+                                    patientEmail: patient.email,
+                                    doctorEmail: doctorData.email
                                 }
                                 // If package exists
                                 if (patient.package) {
@@ -488,7 +503,9 @@ router.post('/get-invoice', auth, async (req, res) => {
                                     name: req.body['info']['name'],
                                     age: req.body['info']['age'],
                                     gender: req.body['info']['gender'],
-                                    phone: patient.phone
+                                    phone: patient.phone,
+                                    patientEmail: patient.email,
+                                    doctorEmail: doctorData.email
                                 };
                                 const profile = patient.profiles.filter((profile) => profile.id == req.body['info']['id'])[0];
                                 console.log('profile');
@@ -717,17 +734,17 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
                             await newAppointment.save();
                         })();
 
-                        // SEND MAIL TO PATIENT & DOCTOR
-                        const sub = 'Appointment Confirmation';
-                        const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
-                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+                        // // SEND MAIL TO PATIENT & DOCTOR
+                        // const sub = 'Appointment Confirmation';
+                        // const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+                        // const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
 
-                        try {
-                            sendMail(patientEmail, sub, text);
-                            sendMail(doctorEmail, sub, text2);
-                        } catch (err) {
-                            console.log(err);
-                        }
+                        // try {
+                        //     sendMail(patientEmail, sub, text);
+                        //     sendMail(doctorEmail, sub, text2);``
+                        // } catch (err) {
+                        //     console.log(err);
+                        // }
 
                         return console.log('Calendar event successfully created.')
                     }
