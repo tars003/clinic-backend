@@ -151,7 +151,7 @@ router.get('/get-prescription/:appointmentId', async (req, res) => {
     }
 });
 
-// GET ALL APPOINTMENTS FOR A PATIENT
+// EDIT DOCTOR PROFILE
 router.post('/edit', async (req, res) => {
     try {
         let obj = req.body;
@@ -189,14 +189,14 @@ router.post('/edit', async (req, res) => {
         if (degree) doctor['degree'] = degree;
         if (experience) doctor['experience'] = experience;
         console.log(doctor);
-        let newDoctor = await Doctor.findById(doctor.id);
-        await newDoctor.overwrite(doctor);
-        await newDoctor.save()
+        // let newDoctor = await Doctor.findById(doctor.id);
+        // await newDoctor.overwrite(doctor);
+        await doctor.save()
 
 
         return res.status(200).json({
             success: true,
-            data: newDoctor
+            data: doctor
         });
     } catch(err) {
         console.log(err);
