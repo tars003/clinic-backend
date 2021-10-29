@@ -59,7 +59,8 @@ const DoctorSchema = new mongoose.Schema({
             description:String
         }
     ],
-    fee : Number
+    fee : Number,
+    feeInternational: Number,
 })
 
 module.exports = mongoose.model("doctor", DoctorSchema);

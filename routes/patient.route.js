@@ -220,6 +220,39 @@ router.post('/create/email', async (req, res) => {
     }
 });
 
+
+// UPDATE ROUTE FOR PATIENT
+router.post('/nationality/update', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            isIndian
+        } = obj;
+
+        let tempProfile = await Patient.findById( req.body.data.id );
+
+        if(tempProfile){
+            if(isIndian) tempProfile['isIndian'] = true;
+            else tempProfile['isIndian'] = false;
+        }
+        else {
+            return res.status(400).json({
+                success: true,
+                message: 'np user found for given token'
+            })
+        }
+
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            error: 'Server error',
+            success: false,
+        });
+    }
+});
+
+
 // UPDATE ROUTE FOR PATIENT
 router.post('/update', auth, async (req, res) => {
     try {
@@ -227,10 +260,10 @@ router.post('/update', auth, async (req, res) => {
         // console.log(obj)
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         const {
-            id,
             name,
             age,
             gender,
+            address,
         } = obj;
 
         let tempProfile = await Patient.findById( req.body.data.id );
@@ -240,6 +273,7 @@ router.post('/update', auth, async (req, res) => {
                 tempProfile['name'] = name;
                 tempProfile['age'] = age;
                 tempProfile['gender'] = gender;
+                tempProfile['address'] = address;
                 const newProfile = await Patient.findById(tempProfile.id);
                 newProfile.overwrite(tempProfile);
                 newProfile.save();
@@ -257,6 +291,7 @@ router.post('/update', auth, async (req, res) => {
                         profile['name'] = name;
                         profile['age'] = age;
                         profile['gender'] = gender;
+                        profile['address'] = address;
                         isFound = true;
                     }
                     return profile;

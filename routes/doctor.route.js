@@ -161,6 +161,7 @@ router.post('/edit', async (req, res) => {
             name,
             email,
             fee,
+            feeInternational,
             services,
             awards,
             registration,
@@ -181,6 +182,7 @@ router.post('/edit', async (req, res) => {
         if (name) doctor['name'] = name;
         if (email) doctor['email'] = email;
         if (fee) doctor['fee'] = fee;
+        if (feeInternational) doctor['feeInternational'] = feeInternational;
         if (services) doctor['services'] = services;
         if (awards) doctor['awards'] = awards;
         if (registration) doctor['registration'] = registration;

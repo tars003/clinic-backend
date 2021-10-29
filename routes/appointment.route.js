@@ -462,8 +462,11 @@ router.post('/get-invoice', auth, async (req, res) => {
                         // PACKAGE CONSULTATIONS UTILIZATION
                         const patient = await Patient.findById(req.body.data.id);
                         // calculating fees based on the coupon object retrieved from db
-                        console.log('beforeFee', doctorData.fee);
-                        var fee = doctorData.fee * ((100 - coupon.percentOff) / 100);
+                        let finalFee;
+                        if(patient.isIndian) finalFee = doctorData.fee;
+                        else finalFee = doctorData.feeInternational;
+                        console.log('beforeFee', finalFee);
+                        var fee = finalFee * ((100 - coupon.percentOff) / 100);
                         var isPackageUsed = false;
                         console.log('afterFee', fee);
                         var info = {};
