@@ -285,6 +285,7 @@ router.post('/update', auth, async (req, res) => {
                 tempProfile['age'] = age;
                 tempProfile['gender'] = gender;
                 tempProfile['address'] = address;
+                console.log('tempProfile',tempProfile);
                 const newProfile = await Patient.findById(tempProfile.id);
                 newProfile.overwrite(tempProfile);
                 newProfile.save();
@@ -302,7 +303,6 @@ router.post('/update', auth, async (req, res) => {
                         profile['name'] = name;
                         profile['age'] = age;
                         profile['gender'] = gender;
-                        profile['address'] = address;
                         isFound = true;
                     }
                     return profile;
