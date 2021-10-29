@@ -289,7 +289,7 @@ router.post('/update', auth, async (req, res) => {
                 const newProfile = await Patient.findById(tempProfile.id);
                 newProfile.overwrite(tempProfile);
                 console.log('newProfile', newProfile);
-                newProfile.save();
+                await newProfile.save();
 
                 return res.status(200).json({
                     success: true,
