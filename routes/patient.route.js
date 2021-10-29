@@ -287,7 +287,7 @@ router.post('/update', auth, async (req, res) => {
                 tempProfile['address'] = address;
                 console.log('tempProfile',tempProfile);
                 const newProfile = await Patient.findById(tempProfile.id);
-                await newProfile.update(tempProfile);
+                await Patient.updateOne(tempProfile.id, tempProfile);
                 console.log('newProfile', newProfile);
                 await newProfile.save();
 
