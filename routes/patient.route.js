@@ -236,7 +236,7 @@ router.post('/nationality/update', auth, async (req, res) => {
         if(tempProfile){
             if(isIndian) tempProfile['isIndian'] = true;
             else tempProfile['isIndian'] = false;
-
+            
             const newProfile = await Patient.findById(tempProfile.id);
             newProfile.overwrite(tempProfile);
             newProfile.save();
@@ -270,6 +270,7 @@ router.post('/update', auth, async (req, res) => {
         // console.log(obj)
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         const {
+            id,
             name,
             age,
             gender,
