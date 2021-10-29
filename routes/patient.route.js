@@ -286,10 +286,10 @@ router.post('/update', auth, async (req, res) => {
                 tempProfile['gender'] = gender;
                 tempProfile['address'] = address;
                 console.log('tempProfile',tempProfile);
-                const newProfile = await Patient.findById(tempProfile.id);
-                await Patient.updateOne(tempProfile.id, tempProfile);
-                console.log('newProfile', newProfile);
-                await newProfile.save();
+                // const newProfile = await Patient.findById(tempProfile.id);
+                // await Patient.updateOne(tempProfile.id, tempProfile);
+                // console.log('newProfile', newProfile);
+                await tempProfile.save();
 
                 return res.status(200).json({
                     success: true,
