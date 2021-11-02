@@ -362,7 +362,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         try {
                             sendMail(appointment['info']['patientEmail'], sub, text);
                             // sendMail(appointment['info']['doctorEmail'], sub, text2);
-                            sendMail('musafir017@gmail.com', sub, text2);
+                            sendMail('homeosure@gmail.com', sub, text2);
                         } catch (err) {
                             console.log(err);
                         }
