@@ -1,4 +1,5 @@
 const mongoose = require("mongoose");
+const moment = require('moment');
 
 const PatientSchema = new mongoose.Schema({
     name: String,
@@ -8,7 +9,10 @@ const PatientSchema = new mongoose.Schema({
     age: Number,
     isIndian: Boolean,
     address: String,
-    dateRegistered : String,
+    dateRegistered : {
+        type: String,
+        default: `${moment().format('DD-MM-YYYY')}`
+    },
     package: {
         name: String,
         consultationsLeft: Number,
