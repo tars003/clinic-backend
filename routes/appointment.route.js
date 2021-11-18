@@ -269,13 +269,13 @@ router.get('/cancel/:appointmentId', auth, async (req, res) => {
         // daySchedule1.save();
 
         const result = await cancelAppointment(req.params.appointmentId);
-        if(result.success) {
+        if (result.success) {
             return res.status(200).json(result);
         } else {
             return res.status(400).json(result)
         }
 
-        
+
     } catch (err) {
         console.log(err);
         res.status(503).json({
@@ -359,31 +359,17 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                             appointment['paymentStatus'] = 'FAILED';
                         }
 
-                        // SEND MAIL TO PATIENT & DOCTOR
-                        const sub = 'Appointment Confirmation';
-                        const text = `Hey ${appointment.info.name}, your appointment has been succesfully booked.
-                        Slot : ${appointment.timeSlot}
-                        Date : ${appointment.date}
-                        Payment Status : ${appointment.paymentStatus}
-                        Consultation Meet Link : ${appointment['consultationLink']}
+                        // SEND CONFIRMATION MAIL TO DOCTOR AND PATIENT
+                        sendConfirmationMail(appointment);
 
-                        Doctor contact info : ${appointment.info.doctorEmail}
-                        `
-                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
-                        Patient Name : ${appointment.info.name}
-                        Patient Age : ${appointment.info.age}
-                        Patient gender : ${appointment.info.gender}
-                        Phone no. : ${appointment.info.phone}
-                        Email : ${appointment.info.patientEmail}
-                        `
-
-                        try {
-                            sendMail(appointment['info']['patientEmail'], sub, text);
-                            // sendMail(appointment['info']['doctorEmail'], sub, text2);
-                            sendMail('homeosure@gmail.com', sub, text2);
-                        } catch (err) {
-                            console.log(err);
-                        }
+                        // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                        const appTime = appointment.timeSlot.split(" - ")[0];
+                        var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                        var date = new Date(dateObj);
+                        alarm(date, async function () {
+                            console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                            sendReminderMail(appointment);
+                        });
 
 
                         var newAppointment = await Appointment.findById(appointmentId);
@@ -651,7 +637,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                             console.log(`Checking status of ${appointment.id} appointment`);
                             const app = await Appointment.findById(appointment.id);
                             if (appointment.paymentStatus == 'INCOMPLETE') {
-                                const result  = await cancelAppointment(app.id);
+                                const result = await cancelAppointment(app.id);
                                 console.log(result);
                             }
                         });
@@ -843,6 +829,61 @@ const cancelAppointment = async (appointmentId) => {
     })
 }
 
+const sendReminderMail = async (appointment) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Appointment Confirmation';
+    const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
+    Slot : ${appointment.timeSlot}
+    Date : ${appointment.date}
+    Payment Status : ${appointment.paymentStatus}
+    Consultation Meet Link : ${appointment['consultationLink']}
+
+    Doctor contact info : ${appointment.info.doctorEmail}
+    `
+    const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+    Patient Name : ${appointment.info.name}
+    Patient Age : ${appointment.info.age}
+    Patient gender : ${appointment.info.gender}
+    Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail}
+    `
+
+    try {
+        sendMail(appointment['info']['patientEmail'], sub, text);
+        // sendMail(appointment['info']['doctorEmail'], sub, text2);
+        sendMail('homeosure@gmail.com', sub, text2);
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const sendConfirmationMail = async (appointment) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Appointment Confirmation';
+    const text = `Hey ${appointment.info.name}, your appointment has been succesfully booked.
+    Slot : ${appointment.timeSlot}
+    Date : ${appointment.date}
+    Payment Status : ${appointment.paymentStatus}
+    Consultation Meet Link : ${appointment['consultationLink']}
+
+    Doctor contact info : ${appointment.info.doctorEmail}
+    `
+    const text2 = `A new appointment has been succesfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+    Patient Name : ${appointment.info.name}
+    Patient Age : ${appointment.info.age}
+    Patient gender : ${appointment.info.gender}
+    Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail}
+    `
+
+    try {
+        sendMail(appointment['info']['patientEmail'], sub, text);
+        // sendMail(appointment['info']['doctorEmail'], sub, text2);
+        sendMail('homeosure@gmail.com', sub, text2);
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 
 module.exports = router;
