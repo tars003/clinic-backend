@@ -817,7 +817,7 @@ const cancelAppointment = async (appointmentId) => {
     }
 
 
-    let newAppointment = await Appointment.findByIdAndRemove(req.params.appointmentId);
+    let newAppointment = await Appointment.findByIdAndRemove(appointmentId);
 
 
     //  Updating day schedule for the slot to booked
