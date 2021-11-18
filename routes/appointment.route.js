@@ -356,8 +356,21 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
 
                         // SEND MAIL TO PATIENT & DOCTOR
                         const sub = 'Appointment Confirmation';
-                        const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
-                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
+                        const text = `Hey ${appointment.info.name}, your appointment has been succesfully booked.
+                        Slot : ${appointment.slot}
+                        Date : ${appointment.date}
+                        Payment Status : ${appointment.paymentStatus}
+                        Consultation Meet Link : ${appointment['consultationLink']}
+
+                        Doctor contact info : ${appointment.info.doctorEmail}
+                        `
+                        const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+                        Patient Name : ${appointment.info.name}
+                        Patient Age : ${appointment.info.age}
+                        Patient gender : ${appointment.info.gender}
+                        Phone no. : ${appointment.info.phone}
+                        Email : ${appointment.info.patientEmail}
+                        `
 
                         try {
                             sendMail(appointment['info']['patientEmail'], sub, text);
