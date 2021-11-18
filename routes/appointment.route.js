@@ -357,7 +357,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         // SEND MAIL TO PATIENT & DOCTOR
                         const sub = 'Appointment Confirmation';
                         const text = `Hey ${appointment.info.name}, your appointment has been succesfully booked.
-                        Slot : ${appointment.slot}
+                        Slot : ${appointment.timeSlot}
                         Date : ${appointment.date}
                         Payment Status : ${appointment.paymentStatus}
                         Consultation Meet Link : ${appointment['consultationLink']}
