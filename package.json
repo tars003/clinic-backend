@@ -13,6 +13,7 @@
     "nodemon": "^2.0.7"
   },
   "dependencies": {
+    "alarm": "^2.0.0",
     "cookie-parser": "^1.4.5",
     "cors": "^2.8.5",
     "crypto": "^1.0.1",
