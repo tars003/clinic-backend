@@ -365,6 +365,9 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
                         const appTime = appointment.timeSlot.split(" - ")[0];
                         var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                        console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                        console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                        console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
                         var date = new Date(dateObj);
                         alarm(date, async function () {
                             console.log(`Sending reminder mail for  ${appointment.id} appointment`);
@@ -753,18 +756,6 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
                             newAppointment.overwrite(appointment);
                             await newAppointment.save();
                         })();
-
-                        // // SEND MAIL TO PATIENT & DOCTOR
-                        // const sub = 'Appointment Confirmation';
-                        // const text = `Your appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
-                        // const text2 = `A new appointment has been succesfully booked for the slot ${appointment.slot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}`
-
-                        // try {
-                        //     sendMail(patientEmail, sub, text);
-                        //     sendMail(doctorEmail, sub, text2);``
-                        // } catch (err) {
-                        //     console.log(err);
-                        // }
 
                         return console.log('Calendar event successfully created.')
                     }
