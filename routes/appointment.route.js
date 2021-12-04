@@ -638,7 +638,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         var date = getDate().add(parseInt(process.env.autoCancelDuration), 'seconds');
                         console.log(`Auto cancellation  scheduled for:  ${date.format('DD-MM-YYYY HH:mm')}`);
                         console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                        console.log(`Time left ${date.diff(now)}`); 
+                        console.log(`Time left ${date.diff(now, 'seconds')}`); 
                         alarm(date, async function () {
                             console.log(`Checking status of ${appointment.id} appointment`);
                             const app = await Appointment.findById(appointment.id);
