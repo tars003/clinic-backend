@@ -642,7 +642,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         alarm(date, async function () {
                             console.log(`Checking status of ${appointment.id} appointment`);
                             const app = await Appointment.findById(appointment.id);
-                            if (appointment.paymentStatus == 'INCOMPLETE') {
+                            if (app.paymentStatus == 'INCOMPLETE') {
                                 console.log('Inside Cancel !!!!!!!!!!!!!!!!!!!!');
                                 const result = await cancelAppointment(app.id);
                                 console.log(result);
