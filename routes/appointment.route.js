@@ -635,7 +635,7 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         // CREATING ALARM FOR 15 MINS
                         var now = getDate();
-                        var date = now.add(parseInt(process.env.autoCancelDuration), 'seconds');
+                        var date = getDate().add(parseInt(process.env.autoCancelDuration), 'seconds');
                         date = new Date(date);
                         console.log(`Auto cancellation  scheduled for:  ${date.format('DD-MM-YYYY HH:mm')}`);
                         console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
