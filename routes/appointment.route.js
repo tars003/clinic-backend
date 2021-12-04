@@ -636,12 +636,19 @@ router.post('/get-invoice', auth, async (req, res) => {
                         // CREATING ALARM FOR 15 MINS
                         var now = new Date();
                         var date = new Date(+now + parseInt(process.env.autoCancelDuration));
+                        console.log(`Auto cancellation  scheduled for:  ${date}`);
+                        console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                        console.log(`Time left ${date-now}`);
                         alarm(date, async function () {
                             console.log(`Checking status of ${appointment.id} appointment`);
                             const app = await Appointment.findById(appointment.id);
                             if (appointment.paymentStatus == 'INCOMPLETE') {
+                                console.log('Inside Cancel !!!!!!!!!!!!!!!!!!!!');
                                 const result = await cancelAppointment(app.id);
                                 console.log(result);
+                            }
+                            else {
+                                console.log('Payment complete for the appointemnt')
                             }
                         });
 
