@@ -13,6 +13,7 @@ const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots');
 
 const { sendMail } = require('../util/mail');
+const { sendSMS } = require('../util/sms');
 
 
 var transporter = nodemailer.createTransport({
@@ -31,19 +32,36 @@ function getRandomInt() {
 
 router.get('/otp/patient-email/:email', async (req, res) => {
     try {
-        // const patient = await Patient.findOne({ email: req.params.email });
-        // console.log(patient);
-        // let obj = patient;
-        // obj['currOtp'] = getRandomInt();
-        // await patient.overwrite(obj);
-        // await patient.save();
-
         const otp = getRandomInt();
 
         sendMail(
             req.params.email,
             'OTP for logging in',
             `Dear customer your OTP to login is ${otp}`
+        );
+
+        return res.status(200).json({
+            success: true,
+            data: {
+                otp: otp,
+            }
+        })
+    } catch (err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            message: 'Server error'
+        });
+    }
+});
+
+router.get('/otp/patient-phone/:phone', async (req, res) => {
+    try {
+        const otp = getRandomInt();
+
+        sendSMS(
+            req.params.phone,
+            `OTP for logging in. Dear customer your OTP to login is ${otp}`
         );
 
         return res.status(200).json({
