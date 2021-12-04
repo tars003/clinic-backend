@@ -634,16 +634,16 @@ router.post('/get-invoice', auth, async (req, res) => {
                         createLink(appointment, doctorData.email, patient.email);
 
                         // CREATING ALARM FOR 15 MINS
-                        // var now = new Date();
-                        // var date = new Date(+now + parseInt(process.env.autoCancelDuration));
-                        // alarm(date, async function () {
-                        //     console.log(`Checking status of ${appointment.id} appointment`);
-                        //     const app = await Appointment.findById(appointment.id);
-                        //     if (appointment.paymentStatus == 'INCOMPLETE') {
-                        //         const result = await cancelAppointment(app.id);
-                        //         console.log(result);
-                        //     }
-                        // });
+                        var now = new Date();
+                        var date = new Date(+now + parseInt(process.env.autoCancelDuration));
+                        alarm(date, async function () {
+                            console.log(`Checking status of ${appointment.id} appointment`);
+                            const app = await Appointment.findById(appointment.id);
+                            if (appointment.paymentStatus == 'INCOMPLETE') {
+                                const result = await cancelAppointment(app.id);
+                                console.log(result);
+                            }
+                        });
 
                         return res.status(200).json({
                             success: true,
