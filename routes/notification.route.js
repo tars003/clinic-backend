@@ -59,10 +59,10 @@ router.get('/otp/patient-phone/:phone', async (req, res) => {
     try {
         const otp = getRandomInt();
 
-        sendSMS(
-            req.params.phone,
-            `OTP for logging in. Dear customer your OTP to login is ${otp}`
-        );
+        // sendSMS(
+        //     req.params.phone,
+        //     `OTP for logging in. Dear customer your OTP to login is ${otp}`
+        // );
 
         return res.status(200).json({
             success: true,
