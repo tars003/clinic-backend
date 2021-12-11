@@ -59,17 +59,27 @@ router.get('/otp/patient-phone/:phone', async (req, res) => {
     try {
         const otp = getRandomInt();
 
-        // sendSMS(
-        //     req.params.phone,
-        //     `OTP for logging in. Dear customer your OTP to login is ${otp}`
-        // );
+        const reqCode = await sendSMS(
+            req.params.phone,
+            `Homeosure - OTP is ${otp}. Please Do Not Share this OTP with anyone. Regards, Dr. Chhavi Bansal`
+        );
 
-        return res.status(200).json({
-            success: true,
-            data: {
-                otp: otp,
-            }
-        })
+        if(reqCode.includes('-100')) {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    otp: otp,
+                }
+            })
+        }   
+        else {
+            return res.status(400).json({
+                success: false,
+                message: reqCode
+            })
+        }
+
+        
     } catch (err) {
         console.log(err);
         return res.status(503).json({

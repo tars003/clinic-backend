@@ -1,22 +1,25 @@
 const axios = require('axios');
 
-const sendSMS = (recepientNo, text) => {
+const sendSMS = async (recepientNo, text) => {
 
-    var rootUrl = 'http://nimbusit.info/api/pushsms.php';
-    var profileId = '';
-    var apiKey = '';
-    var senderId = '';
-    var dltEntityId = '';
-    var dltTemplateId = '';
+    var smsRootUrl = process.env.smsRootUrl;
+    var smsUserId = process.env.smsUserId;
+    var smsKey = process.env.smsKey;
+    var smsSender = process.env.smsSender;
+    var smsDLTEntityId = process.env.smsDLTEntityId;
+    var smsDLTTemplateId = process.env.smsDLTTemplateId;
 
 
-    var endpoint = `${rootUrl}?user=${profileId}&key=${apiKey}&sender=${senderId}&mobile=${recepientNo}&text=${text}&entityid=${dltEntityId}d&templateid=${dltTemplateId}`;
+    var endpoint = `${smsRootUrl}?user=${smsUserId}&key=${smsKey}&sender=${smsSender}&mobile=${recepientNo}&text=${text}&entityid=${smsDLTEntityId}&templateid=${smsDLTTemplateId}`;
 
-    axios.get(endpoint)
-        .then(data => console.log(data))
-        .catch(err => console.log(err));
+    console.log('endpoint', endpoint);
+
+    const response = await axios.get(endpoint);
+    console.log(response.data); 
+    return response.data;
 
 
 }
+
 
 module.exports = { sendSMS }
