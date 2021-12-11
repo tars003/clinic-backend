@@ -303,6 +303,25 @@ router.post('/create', async (req, res) => {
     }
 });
 
+router.get('/delete/:id', async(req, res) => {
+    try {
+        const doctor = await Doctor.findById(req.params.id)
+
+        const status = await Doctor.findByIdAndDelete(doctor.id);
+
+        return res.status(200).json({
+            success: true,
+            data: status
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+})
+
 
 
 
