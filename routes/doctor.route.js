@@ -288,12 +288,7 @@ router.post('/create', async (req, res) => {
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         console.log(obj);
 
-        const doctor = await Doctor.create({
-            name: obj.name,
-            email:  obj.email,
-            phone: obj.phone,
-            fee: obj.fee
-        })
+        const doctor = await Doctor.create(obj)
 
         return res.status(200).json({
             success: true,
