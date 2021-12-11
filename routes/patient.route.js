@@ -86,6 +86,12 @@ router.get('/get-token/email/:email', async (req, res) => {
                 message: 'No user with found corresponding to given contact number !'
             });
         }
+        if(patient.isIndian) {
+            return res.status(400).json({
+                success: false,
+                message: "An Indian patient is already using this mail, please use any other mail address"
+            })
+        }
         const tokenPayload = {
             data: {
                 id: patient.id
@@ -275,7 +281,16 @@ router.post('/update', auth, async (req, res) => {
             age,
             gender,
             address,
+            email,
         } = obj;
+
+        const tempPatient = await Patient.findOne({ email: email });
+        if(tempPatient) {
+            return res.status(400).json({
+                success: false,
+                message: 'A Patient is already using the email provided'
+            })
+        }
 
         let tempProfile = await Patient.findById( req.body.data.id );
 
@@ -285,6 +300,7 @@ router.post('/update', auth, async (req, res) => {
                 tempProfile['age'] = age;
                 tempProfile['gender'] = gender;
                 tempProfile['address'] = address;
+                if(tempProfile.isIndian) tempP
                 console.log('tempProfile',tempProfile);
                 // const newProfile = await Patient.findById(tempProfile.id);
                 // await Patient.updateOne(tempProfile.id, tempProfile);
