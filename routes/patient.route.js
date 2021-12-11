@@ -55,6 +55,12 @@ router.get('/get-token/:phone', async (req, res) => {
                 message: 'No user with found corresponding to given contact number !'
             });
         }
+        if(!patient.isIndian) {
+            return res.status(400).json({
+                success: false,
+                message: "An International patient is already using this phone number"
+            })
+        }
         const tokenPayload = {
             data: {
                 id: patient.id
