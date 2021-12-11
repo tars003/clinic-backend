@@ -37,8 +37,8 @@ const getDate = () => {
     return moment()
 };
 
-const cancelTime = 720;
-const rescheduleTime = 240;
+const cancelTime = process.env.cancelTime;
+const rescheduleTime = process.env.rescheduleTime;
 
 // GET STARTING TIME FOR APPOINTMENT FROM SLOT
 const getAppTime = (date, slot) => {
@@ -222,51 +222,6 @@ router.post('/reschedule', auth, async (req, res) => {
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
 router.get('/cancel/:appointmentId', auth, async (req, res) => {
     try {
-
-        // CREATING APPOINTMENT
-        // saving the payment status INCOMPLETE in db
-        // let appointment = await Appointment.findById(req.params.appointmentId);
-        // if (!appointment) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'appointment Id invalid'
-        //     })
-        // };
-
-        // // CHECKING IF APPOINTMENT IS RESCHEDULABLE
-        // let currDate = getDate();
-        // let appointmentTime = getAppTime(appointment.date, appointment.timeSlot);
-        // const diffMins = appointmentTime.diff(currDate, 'minutes');
-        // console.log(diffMins);
-        // console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
-        // console.log(currDate.format('DD-MM-YYYY HH:mm'));
-        // if (diffMins < cancelTime) {
-        //     return res.status(400).json({
-        //         success: false,
-        //         message: 'time period for cancellation is closed'
-        //     })
-        // }
-
-
-        // let newAppointment = await Appointment.findByIdAndRemove(req.params.appointmentId);
-
-
-        // //  Updating day schedule for the slot to booked
-        // var daySchedule1 = await Schedule.findById(appointment.date);
-        // const newSchedule = daySchedule1.slots.map((slot) => {
-        //     var newSlot1 = slot;
-        //     if (slot.slot == appointment.timeSlot) {
-        //         newSlot1.booked = false;
-        //         return newSlot1;
-        //     }
-        //     else {
-        //         return newSlot1;
-        //     }
-        // })
-        // daySchedule1['slots'] = newSchedule;
-        // daySchedule1.overwrite(daySchedule1);
-        // // console.log(daySchedule1);
-        // daySchedule1.save();
 
         const result = await cancelAppointment(req.params.appointmentId);
         if (result.success) {
@@ -813,7 +768,7 @@ const cancelAppointment = async (appointmentId) => {
             return newSlot1;
         }
         else {
-            return newSlot1;
+            return newSlot1; 
         }
     })
     daySchedule1['slots'] = newSchedule;
