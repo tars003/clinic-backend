@@ -320,6 +320,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
                         const appTime = appointment.timeSlot.split(" - ")[0];
                         var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                        dateObj = dateObj.subtract(15, 'minutes')
                         console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
                         console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
                         console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
