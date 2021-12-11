@@ -381,6 +381,25 @@ router.get('/get-all', async (req, res) => {
     }
 });
 
+router.get('/delete/:id', async(req, res) => {
+    try {
+        const patient = await Patient.findById(req.params.id)
+
+        const status = await Patient.findByIdAndDelete(patient.id);
+
+        return res.status(200).json({
+            success: true,
+            data: status
+        });
+    } catch(err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+})
+
 
 
 module.exports = router;
