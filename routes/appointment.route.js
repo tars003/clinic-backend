@@ -223,7 +223,7 @@ router.post('/reschedule', auth, async (req, res) => {
 router.get('/cancel/:appointmentId', auth, async (req, res) => {
     try {
 
-        const result = await cancelAppointment(req.params.appointmentId);
+        const result = await cancelAppointment(req.params.appointmentId, false);
         if (result.success) {
             return res.status(200).json(result);
         } else {
@@ -599,7 +599,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                             const app = await Appointment.findById(appointment.id);
                             if (app.paymentStatus == 'INCOMPLETE') {
                                 console.log('Inside Cancel !!!!!!!!!!!!!!!!!!!!');
-                                const result = await cancelAppointment(app.id);
+                                const result = await cancelAppointment(app.id, true);
                                 console.log(result);
                             }
                             else {
@@ -732,7 +732,7 @@ const createLink = (appointment, doctorEmail, patientEmail) => {
 
 }
 
-const cancelAppointment = async (appointmentId) => {
+const cancelAppointment = async (appointmentId, cancelCompulsory) => {
     let appointment = await Appointment.findById(appointmentId);
     if (!appointment) {
         return ({
@@ -748,12 +748,19 @@ const cancelAppointment = async (appointmentId) => {
     console.log(diffMins);
     console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
     console.log(currDate.format('DD-MM-YYYY HH:mm'));
-    if (diffMins < cancelTime) {
-        return ({
-            success: false,
-            message: 'time period for cancellation is closed'
-        })
+
+    if(cancelCompulsory) {
+        console.log('cancellation is automatic, payment not complete')
     }
+    else {
+        if (diffMins < cancelTime) {
+            return ({
+                success: false,
+                message: 'time period for cancellation is closed'
+            })
+        }
+    }
+    
 
 
     let newAppointment = await Appointment.findByIdAndRemove(appointmentId);
