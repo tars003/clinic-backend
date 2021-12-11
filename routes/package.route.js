@@ -249,7 +249,7 @@ router.post('/invoice/buy-package/:packageId', auth, async (req, res) => {
             console.log('packagePrice', packagePrice);
             // APPLYING COUPON DISCOUNT
             var curr = ''
-            if (!package.isIndian || package.isIndian == true) {
+            if (package.isIndian) {
                 curr = 'INR'
             } else {
                 curr = 'USD'
