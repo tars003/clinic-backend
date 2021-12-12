@@ -21,14 +21,14 @@ const getDate = () => {
 router.get('/get-appointments', auth, async (req, res) => {
     try {
         let patient = await Patient.findById(req.body.data.id);
-        if(!patient){
+        if (!patient) {
             return res.status(404).json({
                 success: false,
                 message: 'No user with found corresponding auth token'
             });
         }
 
-        const appointments = await Appointment.find({ patientId : patient.id });
+        const appointments = await Appointment.find({ patientId: patient.id });
         console.log(appointments);
 
         return res.status(200).json({
@@ -36,7 +36,7 @@ router.get('/get-appointments', auth, async (req, res) => {
             length: appointments.length,
             data: appointments
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -49,13 +49,13 @@ router.get('/get-appointments', auth, async (req, res) => {
 router.get('/get-token/:phone', async (req, res) => {
     try {
         let patient = await Patient.findOne({ phone: req.params.phone });
-        if(!patient){
+        if (!patient) {
             return res.status(404).json({
                 success: false,
                 message: 'No user with found corresponding to given contact number !'
             });
         }
-        if(!patient.isIndian) {
+        if (!patient.isIndian) {
             return res.status(400).json({
                 success: false,
                 message: "An International patient is already using this phone number"
@@ -73,7 +73,7 @@ router.get('/get-token/:phone', async (req, res) => {
             token,
             data: patient
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -86,13 +86,13 @@ router.get('/get-token/:phone', async (req, res) => {
 router.get('/get-token/email/:email', async (req, res) => {
     try {
         let patient = await Patient.findOne({ email: req.params.email });
-        if(!patient){
+        if (!patient) {
             return res.status(404).json({
                 success: false,
                 message: 'No user with found corresponding to given contact number !'
             });
         }
-        if(patient.isIndian) {
+        if (patient.isIndian) {
             return res.status(400).json({
                 success: false,
                 message: "An Indian patient is already using this mail, please use any other mail address"
@@ -110,7 +110,7 @@ router.get('/get-token/email/:email', async (req, res) => {
             token,
             data: patient
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -138,7 +138,7 @@ router.post('/create', async (req, res) => {
 
         const tempProfile = await Patient.findOne({ phone });
         console.log(tempProfile);
-        if(tempProfile){
+        if (tempProfile) {
             return res.status(409).json({
                 success: false,
                 message: 'Patient profile already exists'
@@ -156,7 +156,7 @@ router.post('/create', async (req, res) => {
             });
             const payload = {
                 data: {
-                  id: patient.id,
+                    id: patient.id,
                 },
             };
             const token = jwt.sign(payload, process.env.JWT_SECRET);
@@ -167,7 +167,7 @@ router.post('/create', async (req, res) => {
             })
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -194,7 +194,7 @@ router.post('/create/email', async (req, res) => {
 
         const tempProfile = await Patient.findOne({ email });
         console.log(tempProfile);
-        if(tempProfile){
+        if (tempProfile) {
             return res.status(409).json({
                 success: false,
                 message: 'Patient profile already exists'
@@ -212,7 +212,7 @@ router.post('/create/email', async (req, res) => {
             });
             const payload = {
                 data: {
-                  id: patient.id,
+                    id: patient.id,
                 },
             };
             const token = jwt.sign(payload, process.env.JWT_SECRET);
@@ -223,7 +223,7 @@ router.post('/create/email', async (req, res) => {
             })
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -243,12 +243,12 @@ router.post('/nationality/update', auth, async (req, res) => {
             isIndian
         } = obj;
 
-        let tempProfile = await Patient.findById( id );
+        let tempProfile = await Patient.findById(id);
 
-        if(tempProfile){
-            if(isIndian) tempProfile['isIndian'] = true;
+        if (tempProfile) {
+            if (isIndian) tempProfile['isIndian'] = true;
             else tempProfile['isIndian'] = false;
-            
+
             // const newProfile = await Patient.findById(tempProfile.id);
             // newProfile.overwrite(tempProfile);
             tempProfile.save();
@@ -265,7 +265,7 @@ router.post('/nationality/update', auth, async (req, res) => {
             })
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             error: 'Server error',
@@ -290,24 +290,30 @@ router.post('/update', auth, async (req, res) => {
             email,
         } = obj;
 
-        const tempPatient = await Patient.findOne({ email: email });
-        if(tempPatient) {
-            return res.status(400).json({
-                success: false,
-                message: 'A Patient is already using the email provided'
-            })
+        if (email) {
+            const tempPatient = await Patient.findOne({ email: email });
+            if (tempPatient) {
+                return res.status(400).json({
+                    success: false,
+                    message: 'A Patient is already using the email provided'
+                })
+            }
         }
 
-        let tempProfile = await Patient.findById( req.body.data.id );
 
-        if(tempProfile){
-            if(id == tempProfile.id) {
-                tempProfile['name'] = name;
-                tempProfile['age'] = age;
-                tempProfile['gender'] = gender;
-                tempProfile['address'] = address;
-                if(tempProfile.isIndian) tempP
-                console.log('tempProfile',tempProfile);
+        let tempProfile = await Patient.findById(req.body.data.id);
+
+        if (tempProfile) {
+            if (id == tempProfile.id) {
+                if (name) tempProfile['name'] = name;
+                if (age) tempProfile['age'] = age;
+                if (gender) tempProfile['gender'] = gender;
+                if (address) tempProfile['address'] = address;
+                if (email) {
+                    if (tempProfile.isIndian) tempProfile['email'] = email;
+                }
+
+                console.log('tempProfile', tempProfile);
                 // const newProfile = await Patient.findById(tempProfile.id);
                 // await Patient.updateOne(tempProfile.id, tempProfile);
                 // console.log('newProfile', newProfile);
@@ -322,7 +328,7 @@ router.post('/update', auth, async (req, res) => {
                 let profileArr = tempProfile.profiles;
                 let isFound = false;
                 profileArr = profileArr.map(profile => {
-                    if(profile.id == id){
+                    if (profile.id == id) {
                         profile['name'] = name;
                         profile['age'] = age;
                         profile['gender'] = gender;
@@ -332,7 +338,7 @@ router.post('/update', auth, async (req, res) => {
                 });
 
                 // Checking if any sub id was found
-                if(!isFound){
+                if (!isFound) {
                     return res.status(400).json({
                         success: false,
                         message: 'No sub profile found'
@@ -358,7 +364,7 @@ router.post('/update', auth, async (req, res) => {
             })
         }
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             error: 'Server error',
@@ -375,7 +381,7 @@ router.get('/get/:id', auth, async (req, res) => {
             success: true,
             data: patient
         })
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -394,7 +400,7 @@ router.get('/get-all', async (req, res) => {
             success: true,
             data: patients
         })
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -403,7 +409,7 @@ router.get('/get-all', async (req, res) => {
     }
 });
 
-router.get('/delete/:id', async(req, res) => {
+router.get('/delete/:id', async (req, res) => {
     try {
         const patient = await Patient.findById(req.params.id)
 
@@ -413,7 +419,7 @@ router.get('/delete/:id', async(req, res) => {
             success: true,
             data: status
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
