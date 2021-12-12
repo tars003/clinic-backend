@@ -821,7 +821,7 @@ const sendReminderMail = async (appointment) => {
 const sendConfirmationMail = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
     const sub = 'Appointment Confirmation';
-    const text = `Hey ${appointment.info.name}, your appointment has been succesfully booked.
+    const text = `Hey ${appointment.info.name}, your appointment has been successfully booked.
     Slot : ${appointment.timeSlot}
     Date : ${appointment.date}
     Payment Status : ${appointment.paymentStatus}
@@ -829,7 +829,7 @@ const sendConfirmationMail = async (appointment) => {
 
     Doctor contact info : ${appointment.info.doctorEmail}
     `
-    const text2 = `A new appointment has been succesfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+    const text2 = `A new appointment has been successfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
     Patient Name : ${appointment.info.name}
     Patient Age : ${appointment.info.age}
     Patient gender : ${appointment.info.gender}

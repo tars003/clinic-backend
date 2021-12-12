@@ -89,7 +89,7 @@ router.get('/get-token/email/:email', async (req, res) => {
         if (!patient) {
             return res.status(404).json({
                 success: false,
-                message: 'No user with found corresponding to given contact number !'
+                message: 'No user with found corresponding to given email !'
             });
         }
         if (patient.isIndian) {
