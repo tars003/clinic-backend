@@ -12,6 +12,7 @@ const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots')
 const { sendMail } = require('../util/mail');
+const {sendSMS, sendSMSLater} = require('../util/mail');
 const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 
@@ -272,6 +273,8 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
         var isActive = false;
         var coupon;
 
+        const patient = await Patient.findById(appointmentData.patientId);
+
         // coupon validity
         if (appointmentData.coupon == 'NONE') {
             isActive = true;
@@ -316,6 +319,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
 
                         // SEND CONFIRMATION MAIL TO DOCTOR AND PATIENT
                         sendConfirmationMail(appointment);
+                        if(patient.isIndian) sendConfirmationSMS(appointment);
 
                         // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
                         const appTime = appointment.timeSlot.split(" - ")[0];
@@ -325,10 +329,12 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                         console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
                         console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
                         var date = new Date(dateObj);
+
                         alarm(date, async function () {
                             console.log(`Sending reminder mail for  ${appointment.id} appointment`);
                             sendReminderMail(appointment);
                         });
+                        if(patient.isIndian) sendReminderSMS(appointment);
 
 
                         var newAppointment = await Appointment.findById(appointmentId);
@@ -790,9 +796,52 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
     })
 }
 
+const sendReminderSMS = async(appointment) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Reminder  Mail';
+    const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
+    Slot : ${appointment.timeSlot}
+    Date : ${appointment.date}
+    Payment Status : ${appointment.paymentStatus}
+    Consultation Meet Link : ${appointment['consultationLink']}
+
+    Doctor contact info : ${appointment.info.doctorEmail}
+    `
+    const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+    Patient Name : ${appointment.info.name}
+    Patient Age : ${appointment.info.age}
+    Patient gender : ${appointment.info.gender}
+    Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail}
+    `
+
+    try {
+        const appTime = appointment.timeSlot.split(" - ")[0];
+        var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+        var date = dateObj.format('DD-MM-YYYY HH:mm:ss');
+
+        sendSMSLater(
+            appointment['info']['phone'], 
+            text,
+            process.env.smsDLTTemplateId4,
+            date
+        );
+
+        sendSMSLater(
+            '7987022238', 
+            text2,
+            process.env.smsDLTTemplateId5,
+            date
+        );
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
 const sendReminderMail = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
-    const sub = 'Appointment Confirmation';
+    const sub = 'Reminder  Mail';
     const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
     Slot : ${appointment.timeSlot}
     Date : ${appointment.date}
@@ -811,8 +860,46 @@ const sendReminderMail = async (appointment) => {
 
     try {
         sendMail(appointment['info']['patientEmail'], sub, text);
-        // sendMail(appointment['info']['doctorEmail'], sub, text2);
         sendMail('homeosure@gmail.com', sub, text2);
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const sendConfirmationSMS = async(appointment) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Appointment Confirmation';
+    const text = `Hey ${appointment.info.name}, your appointment has been successfully booked.
+    Slot : ${appointment.timeSlot}
+    Date : ${appointment.date}
+    Payment Status : ${appointment.paymentStatus}
+    Consultation Meet Link : ${appointment['consultationLink']}
+
+    Doctor contact info : ${appointment.info.doctorEmail}
+    `
+    const text2 = `A new appointment has been successfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
+    Patient Name : ${appointment.info.name}
+    Patient Age : ${appointment.info.age}
+    Patient gender : ${appointment.info.gender}
+    Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail}
+    `
+
+    try {
+        sendSMS(
+            appointment['info']['phone'], 
+            text,
+            process.env.smsDLTTemplateId2
+        );
+
+        sendSMS(
+            '7987022238', 
+            text2,
+            process.env.smsDLTTemplateId3
+        );
+
+        
     } catch (err) {
         console.log(err);
     }
@@ -839,8 +926,14 @@ const sendConfirmationMail = async (appointment) => {
 
     try {
         sendMail(appointment['info']['patientEmail'], sub, text);
-        // sendMail(appointment['info']['doctorEmail'], sub, text2);
         sendMail('homeosure@gmail.com', sub, text2);
+
+        sendSMS(
+            appointment['info']['phone'], 
+            text,
+            process.env.smsDLTTemplateId2
+        );
+        
     } catch (err) {
         console.log(err);
     }
@@ -848,3 +941,9 @@ const sendConfirmationMail = async (appointment) => {
 
 
 module.exports = router;
+
+// template id 1 -> OTP
+// template id 2 -> confirmation patient
+// template id 3 -> confirmation doctor
+// template id 4 -> reminder patient
+// template id 5 -> reminder doctor

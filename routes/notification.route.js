@@ -61,7 +61,8 @@ router.get('/otp/patient-phone/:phone', async (req, res) => {
 
         const reqCode = await sendSMS(
             req.params.phone,
-            `Homeosure - OTP is ${otp}. Please Do Not Share this OTP with anyone. Regards, Dr. Chhavi Bansal`
+            `Homeosure - OTP is ${otp}. Please Do Not Share this OTP with anyone. Regards, Dr. Chhavi Bansal`,
+            process.env.smsDLTTemplateId1
         );
 
         if(reqCode.includes('-100')) {
