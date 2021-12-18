@@ -12,7 +12,7 @@ const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots')
 const { sendMail } = require('../util/mail');
-const {sendSMS, sendSMSLater} = require('../util/mail');
+const {sendSMS, sendSMSLater} = require('../util/sms');
 const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 
