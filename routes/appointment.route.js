@@ -798,21 +798,9 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
 
 const sendReminderSMS = async(appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
-    const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
-    Slot : ${appointment.timeSlot}
-    Date : ${appointment.date}
-    Payment Status : ${appointment.paymentStatus}
-    Consultation Meet Link : ${appointment['consultationLink']}
-
-    Doctor contact info : ${appointment.info.doctorEmail}
-    `
-    const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
-    Patient Name : ${appointment.info.name}
-    Patient Age : ${appointment.info.age}
-    Patient gender : ${appointment.info.gender}
-    Phone no. : ${appointment.info.phone}
-    Email : ${appointment.info.patientEmail}
-    `
+    const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.Slot : ${appointment.timeSlot}Date : ${appointment.date}Payment Status : ${appointment.paymentStatus}Consultation Meet Link : ${appointment['consultationLink']} - Homeosure`
+    
+    const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. Patient Name : ${appointment.info.name}Patient Age : ${appointment.info.age}Patient gender : ${appointment.info.gender}Phone no. : ${appointment.info.phone}Email : ${appointment.info.patientEmail} - Homeosure`
 
     try {
         const appTime = appointment.timeSlot.split(" - ")[0];
@@ -869,20 +857,9 @@ const sendReminderMail = async (appointment) => {
 const sendConfirmationSMS = async(appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
     const sub = 'Appointment Confirmation';
-    const text = `Hey ${appointment.info.name}, your appointment has been successfully booked.
-    Slot : ${appointment.timeSlot}
-    Date : ${appointment.date}
-    Payment Status : ${appointment.paymentStatus}
-    Consultation Meet Link : ${appointment['consultationLink']}
-
-    Doctor contact info : ${appointment.info.doctorEmail}
-    `
-    const text2 = `A new appointment has been successfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
-    Patient Name : ${appointment.info.name}
-    Patient Age : ${appointment.info.age}
-    Patient gender : ${appointment.info.gender}
-    Phone no. : ${appointment.info.phone}
-    Email : ${appointment.info.patientEmail}
+    const text = `Hey ${appointment.info.name}, your appointment has been successfully booked. Slot : ${appointment.timeSlot} Date : ${appointment.date} Payment Status : ${appointment.paymentStatus} Consultation Meet Link : ${appointment['consultationLink']} - Homeosure`
+    const text2 = `A new appointment has been successfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. Patient Name : ${appointment.info.name}Patient Age : ${appointment.info.age}Patient gender : ${appointment.info.gender}Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail} - Homeosure
     `
 
     try {
