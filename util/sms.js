@@ -43,4 +43,4 @@ const sendSMSLater = async (recepientNo, text, templateId, date) => {
 }
 
 
-module.exports = { sendSMS }
+module.exports = { sendSMS, sendSMSLater }

@@ -798,7 +798,6 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
 
 const sendReminderSMS = async(appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
-    const sub = 'Reminder  Mail';
     const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
     Slot : ${appointment.timeSlot}
     Date : ${appointment.date}
