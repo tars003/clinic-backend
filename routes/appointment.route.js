@@ -805,7 +805,9 @@ const sendReminderSMS = async(appointment) => {
     try {
         const appTime = appointment.timeSlot.split(" - ")[0];
         var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+        dateObj = dateObj.subtract(15, 'minutes');
         var date = dateObj.format('DD-MM-YYYY HH:mm:ss');
+
 
         sendSMSLater(
             appointment['info']['phone'], 
