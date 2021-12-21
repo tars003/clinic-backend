@@ -34,6 +34,15 @@ router.get('/otp/patient-email/:email', async (req, res) => {
     try {
         const otp = getRandomInt();
 
+        if(req.params.email == 'demo@homeosure.com') {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    otp: '101010',
+                }
+            }) 
+        }
+
         sendMail(
             req.params.email,
             'OTP for logging in',
@@ -58,6 +67,15 @@ router.get('/otp/patient-email/:email', async (req, res) => {
 router.get('/otp/patient-phone/:phone', async (req, res) => {
     try {
         const otp = getRandomInt();
+
+        if(req.params.phone == '9876543210') {
+            return res.status(200).json({
+                success: true,
+                data: {
+                    otp: '101010',
+                }
+            })
+        }
 
         const reqCode = await sendSMS(
             req.params.phone,
