@@ -552,6 +552,26 @@ router.post('/get-invoice', auth, async (req, res) => {
                             appointment['orderId'] = 'package availed';
                             appointment['receipt'] = 'package availed';
                             appointment['paymentStatus'] = 'COMPLETE';
+
+                            // Send confirmation mail and sms to patient
+                            sendConfirmationMail(appointment);
+                            if(patient.isIndian) sendConfirmationSMS(appointment);
+
+                            // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                            const appTime = appointment.timeSlot.split(" - ")[0];
+                            var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                            dateObj = dateObj.subtract(15, 'minutes')
+                            console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                            console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                            console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                            var date = new Date(dateObj);
+
+                            alarm(date, async function () {
+                                console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                                sendReminderMail(appointment);
+                            });
+                            if(patient.isIndian) sendReminderSMS(appointment);
+
                             await appointment.save();
                         }
 
