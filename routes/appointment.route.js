@@ -837,7 +837,7 @@ const sendReminderSMS = async(appointment) => {
         );
 
         sendSMSLater(
-            '7987022238', 
+            process.env.doctorNumber, 
             text2,
             process.env.smsDLTTemplateId5,
             date
@@ -869,7 +869,7 @@ const sendReminderMail = async (appointment) => {
 
     try {
         sendMail(appointment['info']['patientEmail'], sub, text);
-        sendMail('homeosure@gmail.com', sub, text2);
+        sendMail(process.env.doctorEmail, sub, text2);
 
     } catch (err) {
         console.log(err);
@@ -892,7 +892,7 @@ const sendConfirmationSMS = async(appointment) => {
         );
 
         sendSMS(
-            '7987022238', 
+            process.env.doctorNumber, 
             text2,
             process.env.smsDLTTemplateId3
         );
@@ -924,7 +924,7 @@ const sendConfirmationMail = async (appointment) => {
 
     try {
         sendMail(appointment['info']['patientEmail'], sub, text);
-        sendMail('homeosure@gmail.com', sub, text2);
+        sendMail(process.env.doctorEmail, sub, text2);
 
         sendSMS(
             appointment['info']['phone'], 
