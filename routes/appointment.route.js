@@ -540,7 +540,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         var order;
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
-                        createLink(appointment, doctorData.email, patient.email);
+                        await createLink(appointment, doctorData.email, patient.email);
 
                         if (!isPackageUsed) {
                             order = await createOrder(fee, currency, receipt, notes);
@@ -682,7 +682,7 @@ router.post('/get-invoice', auth, async (req, res) => {
 
 
 
-const createLink = (appointment, doctorEmail, patientEmail) => {
+const createLink = async (appointment, doctorEmail, patientEmail) => {
     const timeZone = 'Asia/Kolkata';
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
