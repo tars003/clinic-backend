@@ -539,7 +539,7 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         var order;
 
-                        if (!isPackageUsed || coupon.percentOff == 0) {
+                        if (!isPackageUsed) {
                             order = await createOrder(fee, currency, receipt, notes);
                             if (order.id) {
                                 appointment['orderId'] = order.id;
