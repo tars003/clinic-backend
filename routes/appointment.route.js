@@ -850,7 +850,7 @@ const sendReminderSMS = async(appointment) => {
 
 const sendReminderMail = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
-    const sub = 'Reminder  Mail';
+    const sub = 'Reminder  Mail from Homeosure';
     const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.
     Slot : ${appointment.timeSlot}
     Date : ${appointment.date}
@@ -905,7 +905,7 @@ const sendConfirmationSMS = async(appointment) => {
 
 const sendConfirmationMail = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
-    const sub = 'Appointment Confirmation';
+    const sub = 'Appointment Confirmation from Homeosure';
     const text = `Hey ${appointment.info.name}, your appointment has been successfully booked.
     Slot : ${appointment.timeSlot}
     Date : ${appointment.date}
