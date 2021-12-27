@@ -539,6 +539,9 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         var order;
 
+                        // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
+                        createLink(appointment, doctorData.email, patient.email);
+
                         if (!isPackageUsed) {
                             order = await createOrder(fee, currency, receipt, notes);
                             if (order.id) {
@@ -613,7 +616,7 @@ router.post('/get-invoice', auth, async (req, res) => {
 
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
-                        createLink(appointment, doctorData.email, patient.email);
+                        // createLink(appointment, doctorData.email, patient.email);
 
                         // CREATING ALARM FOR 15 MINS
                         var now = getDate();
