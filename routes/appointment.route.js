@@ -438,6 +438,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         var fee = finalFee * ((100 - coupon.percentOff) / 100);
                         var isFeesZero = false;
                         if(fee == 0) isFeesZero = true;
+                        console.log('isFeeszero', isFeesZero);
                         var isPackageUsed = false;
                         console.log('afterFee', fee);
                         var info = {};
@@ -544,15 +545,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         await createLink(appointment, doctorData.email, patient.email);
 
-                        if (!isPackageUsed) {
-                            order = await createOrder(fee, currency, receipt, notes);
-                            if (order.id) {
-                                appointment['orderId'] = order.id;
-                                appointment['receipt'] = order.receipt;
-                                await appointment.save();
-                            }
-                        }
-                        else if(isFeesZero){
+                        if(isFeesZero){
                             order = { isFeesZero: true };
                             appointment['orderId'] = 'fees zero due to coupon';
                             appointment['receipt'] = 'fees zero due to coupon';
@@ -579,6 +572,16 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                             await appointment.save();
                         }
+                        
+                        else if (!isPackageUsed) {
+                            order = await createOrder(fee, currency, receipt, notes);
+                            if (order.id) {
+                                appointment['orderId'] = order.id;
+                                appointment['receipt'] = order.receipt;
+                                await appointment.save();
+                            }
+                        }
+                        
 
                         else {
                             order = { packageUsed: true };
