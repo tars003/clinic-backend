@@ -39,7 +39,8 @@ const isCouponApplicable =  (coupon, patientId) => {
             console.log('patientIds');
             console.log(patientIds);
             if(patientIds.includes(patientId)) {
-                flag = false
+                flag = false;
+                if(!coupon.isOneTime) flag = true;
                 console.log('coupon already used')
             }
             else 
