@@ -753,7 +753,7 @@ const createLink = async (appointment, doctorEmail, patientEmail) => {
         },
     };
     console.log(event);
-    calendar.freebusy.query(
+    await calendar.freebusy.query(
         {
             resource: {
                 timeMin: eventStartTime,
@@ -893,7 +893,7 @@ const sendReminderMail = async (appointment) => {
     Payment Status : ${appointment.paymentStatus}
     Consultation Meet Link : ${appointment['consultationLink']}
 
-    Doctor contact info : ${appointment.info.doctorEmail}
+    Doctor contact info : ${process.env.doctorEmail}
     `
     const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
     Patient Name : ${appointment.info.name}
@@ -948,7 +948,7 @@ const sendConfirmationMail = async (appointment) => {
     Payment Status : ${appointment.paymentStatus}
     Consultation Meet Link : ${appointment['consultationLink']}
 
-    Doctor contact info : ${appointment.info.doctorEmail}
+    Doctor contact info : ${process.env.doctorEmail}
     `
     const text2 = `A new appointment has been successfully booked for the slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. 
     Patient Name : ${appointment.info.name}
