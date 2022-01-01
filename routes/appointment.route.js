@@ -12,7 +12,7 @@ const Doctor = require('../models/Doctor.model');
 const auth = require('../middleware/auth');
 const generateSlots = require('../util/GenerateSlots')
 const { sendMail } = require('../util/mail');
-const {sendSMS, sendSMSLater} = require('../util/sms');
+const { sendSMS, sendSMSLater } = require('../util/sms');
 const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 
@@ -319,7 +319,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
 
                         // SEND CONFIRMATION MAIL TO DOCTOR AND PATIENT
                         sendConfirmationMail(appointment);
-                        if(patient.isIndian) sendConfirmationSMS(appointment);
+                        if (patient.isIndian) sendConfirmationSMS(appointment);
 
                         // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
                         const appTime = appointment.timeSlot.split(" - ")[0];
@@ -334,7 +334,7 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
                             console.log(`Sending reminder mail for  ${appointment.id} appointment`);
                             sendReminderMail(appointment);
                         });
-                        if(patient.isIndian) sendReminderSMS(appointment);
+                        if (patient.isIndian) sendReminderSMS(appointment);
 
 
                         var newAppointment = await Appointment.findById(appointmentId);
@@ -437,7 +437,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         console.log('beforeFee', finalFee);
                         var fee = finalFee * ((100 - coupon.percentOff) / 100);
                         var isFeesZero = false;
-                        if(fee == 0) isFeesZero = true;
+                        if (fee == 0) isFeesZero = true;
                         console.log('isFeeszero', isFeesZero);
                         var isPackageUsed = false;
                         console.log('afterFee', fee);
@@ -542,37 +542,39 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         var order;
 
-                        // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
-                        await createLink(appointment, doctorData.email, patient.email);
+                        var sendMessage = isFeesZero || isPackageUsed;
 
-                        if(isFeesZero){
+                        // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
+                        await createLink(appointment, doctorData.email, patient.email, patient.isIndian, sendMessage);
+
+                        if (isFeesZero) {
                             order = { isFeesZero: true };
                             appointment['orderId'] = 'fees zero due to coupon';
                             appointment['receipt'] = 'fees zero due to coupon';
                             appointment['paymentStatus'] = 'COMPLETE';
 
-                            // Send confirmation mail and sms to patient
-                            sendConfirmationMail(appointment);
-                            if(patient.isIndian) sendConfirmationSMS(appointment);
+                            // // Send confirmation mail and sms to patient
+                            // sendConfirmationMail(appointment);
+                            // if(patient.isIndian) sendConfirmationSMS(appointment);
 
-                            // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
-                            const appTime = appointment.timeSlot.split(" - ")[0];
-                            var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
-                            dateObj = dateObj.subtract(15, 'minutes')
-                            console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
-                            console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                            console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
-                            var date = new Date(dateObj);
+                            // // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                            // const appTime = appointment.timeSlot.split(" - ")[0];
+                            // var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                            // dateObj = dateObj.subtract(15, 'minutes')
+                            // console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                            // console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                            // console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                            // var date = new Date(dateObj);
 
-                            alarm(date, async function () {
-                                console.log(`Sending reminder mail for  ${appointment.id} appointment`);
-                                sendReminderMail(appointment);
-                            });
-                            if(patient.isIndian) sendReminderSMS(appointment);
+                            // alarm(date, async function () {
+                            //     console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                            //     sendReminderMail(appointment);
+                            // });
+                            // if(patient.isIndian) sendReminderSMS(appointment);
 
                             await appointment.save();
                         }
-                        
+
                         else if (!isPackageUsed) {
                             order = await createOrder(fee, currency, receipt, notes);
                             if (order.id) {
@@ -581,7 +583,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                                 await appointment.save();
                             }
                         }
-                        
+
 
                         else {
                             order = { packageUsed: true };
@@ -589,24 +591,24 @@ router.post('/get-invoice', auth, async (req, res) => {
                             appointment['receipt'] = 'package availed';
                             appointment['paymentStatus'] = 'COMPLETE';
 
-                            // Send confirmation mail and sms to patient
-                            sendConfirmationMail(appointment);
-                            if(patient.isIndian) sendConfirmationSMS(appointment);
+                            // // Send confirmation mail and sms to patient
+                            // sendConfirmationMail(appointment);
+                            // if(patient.isIndian) sendConfirmationSMS(appointment);
 
-                            // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
-                            const appTime = appointment.timeSlot.split(" - ")[0];
-                            var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
-                            dateObj = dateObj.subtract(15, 'minutes')
-                            console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
-                            console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                            console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
-                            var date = new Date(dateObj);
+                            // // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                            // const appTime = appointment.timeSlot.split(" - ")[0];
+                            // var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                            // dateObj = dateObj.subtract(15, 'minutes')
+                            // console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                            // console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                            // console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                            // var date = new Date(dateObj);
 
-                            alarm(date, async function () {
-                                console.log(`Sending reminder mail for  ${appointment.id} appointment`);
-                                sendReminderMail(appointment);
-                            });
-                            if(patient.isIndian) sendReminderSMS(appointment);
+                            // alarm(date, async function () {
+                            //     console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                            //     sendReminderMail(appointment);
+                            // });
+                            // if(patient.isIndian) sendReminderSMS(appointment);
 
                             await appointment.save();
                         }
@@ -656,7 +658,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         var date = getDate().add(parseInt(process.env.autoCancelDuration), 'seconds');
                         console.log(`Auto cancellation  scheduled for:  ${date.format('DD-MM-YYYY HH:mm')}`);
                         console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                        console.log(`Time left ${date.diff(now, 'seconds')}`); 
+                        console.log(`Time left ${date.diff(now, 'seconds')}`);
                         alarm(date, async function () {
                             console.log(`Checking status of ${appointment.id} appointment`);
                             const app = await Appointment.findById(appointment.id);
@@ -715,7 +717,7 @@ router.post('/get-invoice', auth, async (req, res) => {
 
 
 
-const createLink = async (appointment, doctorEmail, patientEmail) => {
+const createLink = async (appointment, doctorEmail, patientEmail, isIndian, sendMessage) => {
     const timeZone = 'Asia/Kolkata';
     const calendar = google.calendar({ version: 'v3', auth: oAuth2Client });
 
@@ -782,6 +784,27 @@ const createLink = async (appointment, doctorEmail, patientEmail) => {
                             await newAppointment.save();
                         })();
 
+                        if (sendMessage) {
+                            // Send confirmation mail and sms to patient
+                            sendConfirmationMail(appointment);
+                            if (isIndian) sendConfirmationSMS(appointment);
+
+                            // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                            const appTime = appointment.timeSlot.split(" - ")[0];
+                            var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                            dateObj = dateObj.subtract(15, 'minutes')
+                            console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                            console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                            console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                            var date = new Date(dateObj);
+
+                            alarm(date, async function () {
+                                console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                                sendReminderMail(appointment);
+                            });
+                            if (isIndian) sendReminderSMS(appointment);
+                        }
+
                         return console.log('Calendar event successfully created.')
                     }
                 );
@@ -793,12 +816,12 @@ const createLink = async (appointment, doctorEmail, patientEmail) => {
         }
     ).then(() => {
         const checkApp = await Appointment.findById(appointment.id);
-        if(checkApp['consultationLink'] == "") {
-            createLink(appointment, doctorEmail, patientEmail);
+        if (checkApp['consultationLink'] == "") {
+            createLink(appointment, doctorEmail, patientEmail, isIndian);
         }
     });
 
-    
+
 
 }
 
@@ -819,7 +842,7 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
     console.log(appointmentTime.format('DD-MM-YYYY HH:mm'));
     console.log(currDate.format('DD-MM-YYYY HH:mm'));
 
-    if(cancelCompulsory) {
+    if (cancelCompulsory) {
         console.log('cancellation is automatic, payment not complete')
     }
     else {
@@ -830,7 +853,7 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
             })
         }
     }
-    
+
 
 
     let newAppointment = await Appointment.findByIdAndRemove(appointmentId);
@@ -845,7 +868,7 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
             return newSlot1;
         }
         else {
-            return newSlot1; 
+            return newSlot1;
         }
     })
     daySchedule1['slots'] = newSchedule;
@@ -859,10 +882,10 @@ const cancelAppointment = async (appointmentId, cancelCompulsory) => {
     })
 }
 
-const sendReminderSMS = async(appointment) => {
+const sendReminderSMS = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
     const text = `Hey ${appointment.info.name}, your appointment is scheduled in 15 minutes. Please use the meet link attached below to join the consultation.Slot : ${appointment.timeSlot}Date : ${appointment.date}Payment Status : ${appointment.paymentStatus}Consultation Meet Link : ${appointment['consultationLink']} - Homeosure`
-    
+
     const text2 = `A  appointment is scheduled in 15 minutes,  slot ${appointment.timeSlot} and ${appointment.date} . The meeting link for the consultation is ${appointment['consultationLink']}. Patient Name : ${appointment.info.name}Patient Age : ${appointment.info.age}Patient gender : ${appointment.info.gender}Phone no. : ${appointment.info.phone}Email : ${appointment.info.patientEmail} - Homeosure`
 
     try {
@@ -873,14 +896,14 @@ const sendReminderSMS = async(appointment) => {
 
 
         sendSMSLater(
-            appointment['info']['phone'], 
+            appointment['info']['phone'],
             text,
             process.env.smsDLTTemplateId4,
             date
         );
 
         sendSMSLater(
-            process.env.doctorNumber, 
+            process.env.doctorNumber,
             text2,
             process.env.smsDLTTemplateId5,
             date
@@ -919,7 +942,7 @@ const sendReminderMail = async (appointment) => {
     }
 }
 
-const sendConfirmationSMS = async(appointment) => {
+const sendConfirmationSMS = async (appointment) => {
     // SEND MAIL TO PATIENT & DOCTOR
     const sub = 'Appointment Confirmation';
     const text = `Hey ${appointment.info.name}, your appointment has been successfully booked. Slot : ${appointment.timeSlot} Date : ${appointment.date} Payment Status : ${appointment.paymentStatus} Consultation Meet Link : ${appointment['consultationLink']} - Homeosure`
@@ -929,18 +952,18 @@ const sendConfirmationSMS = async(appointment) => {
 
     try {
         sendSMS(
-            appointment['info']['phone'], 
+            appointment['info']['phone'],
             text,
             process.env.smsDLTTemplateId2
         );
 
         sendSMS(
-            process.env.doctorNumber, 
+            process.env.doctorNumber,
             text2,
             process.env.smsDLTTemplateId3
         );
 
-        
+
     } catch (err) {
         console.log(err);
     }
@@ -970,11 +993,11 @@ const sendConfirmationMail = async (appointment) => {
         sendMail(process.env.doctorEmail, sub, text2);
 
         sendSMS(
-            appointment['info']['phone'], 
+            appointment['info']['phone'],
             text,
             process.env.smsDLTTemplateId2
         );
-        
+
     } catch (err) {
         console.log(err);
     }
