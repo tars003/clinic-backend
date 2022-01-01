@@ -542,10 +542,11 @@ router.post('/get-invoice', auth, async (req, res) => {
 
                         var order;
 
-                        var sendMessage = isFeesZero || isPackageUsed;
+                        var sendMessage = false;
+                        if(isFeesZero || isPackageUsed) sendMessage = true;
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
-                        await createLink(appointment, doctorData.email, patient.email, patient.isIndian, sendMessage);
+                        createLink(appointment, doctorData.email, patient.email, patient.isIndian, sendMessage);
 
                         if (isFeesZero) {
                             order = { isFeesZero: true };
@@ -782,9 +783,9 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                             console.log(appointment);
                             newAppointment.overwrite(appointment);
                             await newAppointment.save();
-                        })();
 
-                        (async () => {
+                            console.log('sendMessage:::::::::::::::::::::::::::', sendMessage);
+
                             if (sendMessage) {
                                 // Send confirmation mail and sms to patient
                                 sendConfirmationMail(appointment);
@@ -806,7 +807,6 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                                 if (isIndian) sendReminderSMS(appointment);
                             }
                         })();
-
                         
 
                         return console.log('Calendar event successfully created.')
