@@ -784,26 +784,30 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                             await newAppointment.save();
                         })();
 
-                        if (sendMessage) {
-                            // Send confirmation mail and sms to patient
-                            sendConfirmationMail(appointment);
-                            if (isIndian) sendConfirmationSMS(appointment);
+                        (async () => {
+                            if (sendMessage) {
+                                // Send confirmation mail and sms to patient
+                                sendConfirmationMail(appointment);
+                                if (isIndian) sendConfirmationSMS(appointment);
+    
+                                // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                                const appTime = appointment.timeSlot.split(" - ")[0];
+                                var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                                dateObj = dateObj.subtract(15, 'minutes')
+                                console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                                console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                                console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                                var date = new Date(dateObj);
+    
+                                alarm(date, async function () {
+                                    console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                                    sendReminderMail(appointment);
+                                });
+                                if (isIndian) sendReminderSMS(appointment);
+                            }
+                        })();
 
-                            // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
-                            const appTime = appointment.timeSlot.split(" - ")[0];
-                            var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
-                            dateObj = dateObj.subtract(15, 'minutes')
-                            console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
-                            console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                            console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
-                            var date = new Date(dateObj);
-
-                            alarm(date, async function () {
-                                console.log(`Sending reminder mail for  ${appointment.id} appointment`);
-                                sendReminderMail(appointment);
-                            });
-                            if (isIndian) sendReminderSMS(appointment);
-                        }
+                        
 
                         return console.log('Calendar event successfully created.')
                     }
