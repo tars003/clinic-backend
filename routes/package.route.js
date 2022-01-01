@@ -132,7 +132,7 @@ router.get('/remove/:id', auth, async (req, res) => {
 router.get('/view-package', auth, async (req, res) => {
     try {
         let packages;
-        if (req.body.data.id) {
+        if (req.body.data != undefined) {
             const isOld = await Appointment.findOne({ patientId: req.body.data.id });
             
             if (isOld) {
