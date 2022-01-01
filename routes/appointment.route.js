@@ -818,12 +818,13 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                 return console.log(`Sorry I'm busy...`)
             }
         }
-    ).then(async() => {
-        const checkApp = await Appointment.findById(appointment.id);
-        if (checkApp['consultationLink'] == "") {
-            createLink(appointment, doctorEmail, patientEmail, isIndian);
-        }
-    });
+    )
+    // .then(async() => {
+    //     const checkApp = await Appointment.findById(appointment.id);
+    //     if (checkApp['consultationLink'] == "") {
+    //         createLink(appointment, doctorEmail, patientEmail, isIndian);
+    //     }
+    // });
 
 
 
