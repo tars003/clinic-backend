@@ -131,15 +131,21 @@ router.get('/remove/:id', auth, async (req, res) => {
 // SEE ALL Packages Route
 router.get('/view-package', auth, async (req, res) => {
     try {
-        const isOld = await Appointment.findOne({patientId: req.body.data.id});
         let packages;
-        if(isOld) {
-            packages = await Package.find({patientType: 'old'});
+        if (req.body.data.id) {
+            const isOld = await Appointment.findOne({ patientId: req.body.data.id });
+            
+            if (isOld) {
+                packages = await Package.find({ patientType: 'old' });
+            }
+            else {
+                packages = await Package.find({ patientType: 'new' });
+            }
         }
-        else {
-            packages = await Package.find({patientType: 'new'});
-        }
-        
+        else 
+            packages = await Package.find();
+
+
 
         console.log(packages);
         return res.status(200).json({
