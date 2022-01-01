@@ -753,7 +753,7 @@ const createLink = async (appointment, doctorEmail, patientEmail) => {
         },
     };
     console.log(event);
-    await calendar.freebusy.query(
+    calendar.freebusy.query(
         {
             resource: {
                 timeMin: eventStartTime,
@@ -791,7 +791,14 @@ const createLink = async (appointment, doctorEmail, patientEmail) => {
                 return console.log(`Sorry I'm busy...`)
             }
         }
-    )
+    ).then(() => {
+        const checkApp = await Appointment.findById(appointment.id);
+        if(checkApp['consultationLink'] == "") {
+            createLink(appointment, doctorEmail, patientEmail);
+        }
+    });
+
+    
 
 }
 
