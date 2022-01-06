@@ -377,7 +377,7 @@ router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
         const status = confirmPayment(orderId, paymentId, sig);
         if (status) {
             // SAVING PACKAGE IN PATIENT SUB PROFILE
-            sendConfirmationMail(patient, paymentId);
+            if(data.consultationsLeft == 0) sendConfirmationMail(patient, paymentId);
             if (req.body.profileId != patient.id) {
                 let profileArr = patient.profiles.map(profile => {
                     if (profile.id == req.body.profileId) {
