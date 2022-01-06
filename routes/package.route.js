@@ -16,6 +16,9 @@ const { createOrder, confirmPayment, randomStr } = require('../util/rzp');
 const { isCouponApplicable, isCouponValid } = require('../util/coupon');
 const auth = require('../middleware/auth');
 
+const { sendMail } = require('../util/mail');
+const { sendSMS, sendSMSLater } = require('../util/sms');
+
 const getDate = () => {
     return moment()
 }
@@ -374,6 +377,7 @@ router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
         const status = confirmPayment(orderId, paymentId, sig);
         if (status) {
             // SAVING PACKAGE IN PATIENT SUB PROFILE
+            sendConfirmationMail(patient, paymentId);
             if (req.body.profileId != patient.id) {
                 let profileArr = patient.profiles.map(profile => {
                     if (profile.id == req.body.profileId) {
@@ -408,6 +412,7 @@ router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
                     data: newPatient
                 });
             }
+
         } else {
             return res.status(400).json({
                 success: false,
@@ -423,6 +428,35 @@ router.post('/confirm/buy-package/:packageId', auth, async (req, res) => {
         });
     }
 });
+
+const sendConfirmationMail = async (patient, paymentId) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Medicine Package Request Notification';
+    const text = `Hey ${patient.name}, your payment towards medicine package has been successfully processed.
+    Doctor contact info : ${process.env.doctorEmail}
+    `
+    const text2 = `A new payment for medicine package  has been successfully processed with payment Id : ${paymentId}. 
+    Patient Name : ${patient.name}
+    Patient Age : ${patient.age}
+    Patient gender : ${patient.gender}
+    Phone no. : ${patient.phone}
+    Email : ${patient.email}
+    `
+
+    try {
+        sendMail(appointment['info']['patientEmail'], sub, text);
+        sendMail(process.env.doctorEmail, sub, text2);
+
+        // sendSMS(
+        //     appointment['info']['phone'],
+        //     text,
+        //     process.env.smsDLTTemplateId2
+        // );
+
+    } catch (err) {
+        console.log(err);
+    }
+}
 
 
 
