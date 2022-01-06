@@ -721,7 +721,8 @@ router.post('/get-fees', auth, async (req, res) => {
         obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
         const {
             couponCode,
-            patientId
+            patientId,
+            date
         } = obj;
 
         var coupon = await Coupon.findById(couponCode);
@@ -743,7 +744,7 @@ router.post('/get-fees', auth, async (req, res) => {
         // console.log(isCouponApplicable(coupon, appointmentData['patientId']));
         // console.log('isCouponValid');
         // console.log(isCouponValid(coupon, appointmentData.date));
-        if (coupon.isActive && isCouponValid(coupon, appointmentData.date) && isCouponApplicable(coupon, appointmentData['patientId'])) {
+        if (coupon.isActive && isCouponValid(coupon, date) && isCouponApplicable(coupon, patientId)) {
             let finalFee;
             if (patient.isIndian) finalFee = doctorData.fee;
             else finalFee = doctorData.feeInternational;
