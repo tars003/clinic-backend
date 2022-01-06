@@ -772,7 +772,7 @@ router.post('/get-fees', auth, async (req, res) => {
                     }
                 }
                 else {
-                    const profile = patient.profiles.filter((profile) => profile.id == req.body['info']['id'])[0];
+                    const profile = patient.profiles.filter((profile) => profile.id == patientId)[0];
                     console.log('profile');
                     console.log(profile);
 
