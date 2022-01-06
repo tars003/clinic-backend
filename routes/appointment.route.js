@@ -756,7 +756,7 @@ router.post('/get-fees', auth, async (req, res) => {
             var isPackageUsed = false;
             console.log('afterFee', fee);
 
-            if (req.body['info']) {
+            if (patientId) {
                 // CHECKING IF THE APPOINTMENT IS BEING BOOKED FOR MAIN PROFILE OF THE PATIENT
                 if (patientId == patient.id) {
                     // If package exists
