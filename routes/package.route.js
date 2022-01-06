@@ -444,7 +444,7 @@ const sendConfirmationMail = async (patient, paymentId) => {
     `
 
     try {
-        sendMail(appointment['info']['patientEmail'], sub, text);
+        sendMail(patient.email, sub, text);
         sendMail(process.env.doctorEmail, sub, text2);
 
         // sendSMS(
