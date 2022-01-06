@@ -543,7 +543,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         var order;
 
                         var sendMessage = false;
-                        if(isFeesZero || isPackageUsed) sendMessage = true;
+                        if (isFeesZero || isPackageUsed) sendMessage = true;
 
                         // CREATING GOOGLE MEET LINK AND SAVING IT IN THE APPOINTMENT OBJ
                         createLink(appointment, doctorData.email, patient.email, patient.isIndian, sendMessage);
@@ -714,6 +714,109 @@ router.post('/get-invoice', auth, async (req, res) => {
     }
 });
 
+router.post('/get-fees', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            couponCode,
+            patientId
+        } = obj;
+
+        var coupon = await Coupon.findById(couponCode);
+        const patient = await Patient.findById(req.body.data.id);
+        var doctorData = await Doctor.find();
+        doctorData = doctorData[0];
+
+        console.log('cpouoon', coupon);
+        // if no coupon present in request
+        if (!coupon) {
+            coupon = {
+                _id: 'NONE',
+                isActive: true,
+                percentOff: 0
+            }
+        }
+        // //  The coupon present should have isActive true in db
+        // console.log('is cpoupon Applicable')
+        // console.log(isCouponApplicable(coupon, appointmentData['patientId']));
+        // console.log('isCouponValid');
+        // console.log(isCouponValid(coupon, appointmentData.date));
+        if (coupon.isActive && isCouponValid(coupon, appointmentData.date) && isCouponApplicable(coupon, appointmentData['patientId'])) {
+            let finalFee;
+            if (patient.isIndian) finalFee = doctorData.fee;
+            else finalFee = doctorData.feeInternational;
+            console.log('beforeFee', finalFee);
+            var fee = finalFee * ((100 - coupon.percentOff) / 100);
+            var isFeesZero = false;
+            if (fee == 0) isFeesZero = true;
+            console.log('isFeeszero', isFeesZero);
+            var isPackageUsed = false;
+            console.log('afterFee', fee);
+
+            if (req.body['info']) {
+                // CHECKING IF THE APPOINTMENT IS BEING BOOKED FOR MAIN PROFILE OF THE PATIENT
+                if (patientId == patient.id) {
+                    // If package exists
+                    if (patient.package) {
+                        console.log(patient.package);
+                        var consultations = patient.package.consultationsLeft;
+                        // If his current package has some consultations left
+                        if (consultations > 0) {
+                            isPackageUsed = true;
+                            console.log('inside consultations 0')
+                            fee = 0;
+                        }
+                    }
+                }
+                else {
+                    const profile = patient.profiles.filter((profile) => profile.id == req.body['info']['id'])[0];
+                    console.log('profile');
+                    console.log(profile);
+
+                    if (profile.package) {
+                        console.log(profile.package);
+                        var consultations = profile.package.consultationsLeft;
+                        // If his current package has some consultations left
+                        if (consultations > 0) {
+                            isPackageUsed = true;
+                            console.log('inside consultations 0')
+                            fee = 0;
+                        }
+                    }
+                }
+            }
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'no profile info found'
+                })
+            }
+
+            return res.status(200).json({
+                success: true,
+                fees : fee
+            })
+
+        } else {
+            console.log('Coupon either expired or not valid');
+            return res.status(400).json({
+                success: false,
+                message: 'Coupon either expired or not valid'
+            })
+        }
+
+
+    } catch (err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+})
+
 
 
 
@@ -790,7 +893,7 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                                 // Send confirmation mail and sms to patient
                                 sendConfirmationMail(appointment);
                                 if (isIndian) sendConfirmationSMS(appointment);
-    
+
                                 // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
                                 const appTime = appointment.timeSlot.split(" - ")[0];
                                 var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
@@ -799,7 +902,7 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                                 console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
                                 console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
                                 var date = new Date(dateObj);
-    
+
                                 alarm(date, async function () {
                                     console.log(`Sending reminder mail for  ${appointment.id} appointment`);
                                     sendReminderMail(appointment);
@@ -807,7 +910,7 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                                 if (isIndian) sendReminderSMS(appointment);
                             }
                         })();
-                        
+
 
                         return console.log('Calendar event successfully created.')
                     }
