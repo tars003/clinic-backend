@@ -462,10 +462,21 @@ router.post('/get-invoice', auth, async (req, res) => {
                                     var consultations = patient.package.consultationsLeft;
                                     // If his current package has some consultations left
                                     if (consultations > 0) {
-                                        isPackageUsed = true;
+                                        const boughtDate = moment(patient.package.createdAt, "DD-MM-YYYY");
+                                        const dateDiff = getDate().diff(boughtDate, 'days');
+                                        if(dateDiff > patient.package.validTill) {
+                                            isPackageUsed = false;
+                                            patient.package.consultationsLeft = 0;
+                                        }
+                                        else {
+                                            isPackageUsed = true;
+                                            fee = 0;
+                                            patient.package.consultationsLeft = consultations - 1;
+                                        }
+                                        
                                         console.log('inside consultations 0')
-                                        fee = 0;
-                                        patient.package.consultationsLeft = consultations - 1;
+                                        
+                                        
                                         console.log(patient);
                                         const newPatient = await Patient.findById(patient.id);
                                         newPatient.overwrite(patient);
