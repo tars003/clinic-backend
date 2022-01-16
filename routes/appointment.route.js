@@ -589,7 +589,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         }
 
                         else if (!isPackageUsed) {
-                            order = await createOrder(fee, currency, receipt, appointmentData);
+                            order = await createOrder(fee, currency, receipt, {...appointmentData});
                             if (order.id) {
                                 appointment['orderId'] = order.id;
                                 appointment['receipt'] = order.receipt;
