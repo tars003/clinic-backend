@@ -548,7 +548,8 @@ router.post('/get-invoice', auth, async (req, res) => {
                         }
                         const receipt = randomStr(10, '123465789abcdefgh');
                         const notes = {
-                            "patientName": patient.name
+                            "patientName": patient.name,
+
                         };
 
                         var order;
@@ -588,7 +589,7 @@ router.post('/get-invoice', auth, async (req, res) => {
                         }
 
                         else if (!isPackageUsed) {
-                            order = await createOrder(fee, currency, receipt, notes);
+                            order = await createOrder(fee, currency, receipt, appointmentData);
                             if (order.id) {
                                 appointment['orderId'] = order.id;
                                 appointment['receipt'] = order.receipt;
