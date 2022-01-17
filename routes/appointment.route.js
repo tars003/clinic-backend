@@ -380,6 +380,8 @@ router.post('/confirm-appointment/:appointmentId', auth, async (req, res) => {
     }
 })
 
+
+
 // RETURN CONFIRMATION INVOICE ; takes SLOT, DATE, COUPON, patientId as input
 router.post('/get-invoice', auth, async (req, res) => {
     try {
@@ -820,6 +822,33 @@ router.post('/get-fees', auth, async (req, res) => {
             })
         }
 
+
+    } catch (err) {
+        console.log(err);
+        return res.status(503).json({
+            success: false,
+            error: 'Server error'
+        });
+    }
+})
+
+router.post('/feed-link', auth, async (req, res) => {
+    try {
+        let obj = req.body;
+        console.log(obj);
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+        const {
+            appId,
+            link,
+        } = obj;
+        const appointment = await Appointment.findById(appId);
+        appointment['consultationLink'] = link;
+        await appointment.save();
+        
+        return res.status(200).json({
+            success: true,
+            message: 'Link feeded.'
+        })
 
     } catch (err) {
         console.log(err);
