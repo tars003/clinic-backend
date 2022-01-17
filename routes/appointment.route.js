@@ -188,7 +188,7 @@ router.post('/reschedule', auth, async (req, res) => {
                     // console.log(daySchedule2);
                     daySchedule2.save();
 
-
+                    sendRescheduleMail(newAppointment, oldDate+oldSlot);
 
                     return res.status(200).json({
                         success: true,
@@ -1081,6 +1081,35 @@ const sendReminderMail = async (appointment) => {
     Patient gender : ${appointment.info.gender}
     Phone no. : ${appointment.info.phone}
     Email : ${appointment.info.patientEmail}
+    `
+
+    try {
+        sendMail(appointment['info']['patientEmail'], sub, text);
+        sendMail(process.env.doctorEmail, sub, text2);
+
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+const sendRescheduleMail = async (appointment, oldTime) => {
+    // SEND MAIL TO PATIENT & DOCTOR
+    const sub = 'Reschedule  Mail from Homeosure';
+    const text = `Hey ${appointment.info.name}, your appointment is rescheduled from ${oldTime} to : 
+    Slot : ${appointment.timeSlot}
+    Date : ${appointment.date}
+    Payment Status : ${appointment.paymentStatus}
+    Consultation Meet Link : ${appointment['consultationLink']}
+
+    Doctor contact info : ${process.env.doctorEmail}
+    `
+    const text2 = `A  appointment has beed rescheduled from ${oldTime} to   slot ${appointment.timeSlot} and ${appointment.date} .
+    Patient Name : ${appointment.info.name}
+    Patient Age : ${appointment.info.age}
+    Patient gender : ${appointment.info.gender}
+    Phone no. : ${appointment.info.phone}
+    Email : ${appointment.info.patientEmail}
+    Consultation Meet Link : ${appointment['consultationLink']}
     `
 
     try {
