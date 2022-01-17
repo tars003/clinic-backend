@@ -969,8 +969,11 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                 return e
             }
             else {
-                createLink(appointment, doctorEmail, patientEmail, isIndian, sendMessage);
-                console.log('Callling creatLink Function again , creatLink failed this time.');
+                setTimeout(() => {
+                    createLink(appointment, doctorEmail, patientEmail, isIndian, sendMessage);
+                    console.log('Callling creatLink Function again , creatLink failed this time.');
+                }, 2500);
+                
                 return console.log(`Sorry I'm busy...`);
                 
             }
