@@ -188,7 +188,7 @@ router.post('/reschedule', auth, async (req, res) => {
                     // console.log(daySchedule2);
                     daySchedule2.save();
 
-                    sendRescheduleMail(newAppointment, oldDate+oldSlot);
+                    sendRescheduleMail(newAppointment, oldDate+' ' + oldSlot);
 
                     return res.status(200).json({
                         success: true,
