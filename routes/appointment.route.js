@@ -832,7 +832,7 @@ router.post('/get-fees', auth, async (req, res) => {
     }
 })
 
-router.post('/feed-link', auth, async (req, res) => {
+router.post('/feed-link', async (req, res) => {
     try {
         let obj = req.body;
         console.log(obj);
