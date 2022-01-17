@@ -914,7 +914,8 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
             if (err) return console.error('Free Busy Query Error: ', err)
             const eventArr = res.data.calendars.primary.busy;
             console.log(eventArr);
-            if (eventArr.length === 0) {
+            // if (eventArr.length === 0) {
+            if (true) {
                 const e = calendar.events.insert(
                     { calendarId: 'primary', resource: event, conferenceDataVersion: 1, },
                     (err, response) => {
