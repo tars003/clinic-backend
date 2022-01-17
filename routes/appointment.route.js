@@ -918,41 +918,50 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                 const e = calendar.events.insert(
                     { calendarId: 'primary', resource: event, conferenceDataVersion: 1, },
                     (err, response) => {
-                        if (err) return console.error('Error Creating Calender Event:', err);
+                        if (err) {
+                            createLink(appointment, doctorEmail, patientEmail, isIndian, sendMessage);
+                            console.log('Callling creatLink Function again , creatLink failed this time.');
+                            return console.error('Error Creating Calender Event:', err);
+                        }
 
                         console.log(response.data.hangoutLink);
                         appointment['consultationLink'] = response.data.hangoutLink;
 
-                        (async () => {
-                            const newAppointment = await Appointment.findById(appointment.id);
-                            console.log(appointment);
-                            newAppointment.overwrite(appointment);
-                            await newAppointment.save();
-
-                            console.log('sendMessage:::::::::::::::::::::::::::', sendMessage);
-
-                            if (sendMessage) {
-                                // Send confirmation mail and sms to patient
-                                sendConfirmationMail(appointment);
-                                if (isIndian) sendConfirmationSMS(appointment);
-
-                                // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
-                                const appTime = appointment.timeSlot.split(" - ")[0];
-                                var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
-                                dateObj = dateObj.subtract(15, 'minutes')
-                                console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
-                                console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
-                                console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
-                                var date = new Date(dateObj);
-
-                                alarm(date, async function () {
-                                    console.log(`Sending reminder mail for  ${appointment.id} appointment`);
-                                    sendReminderMail(appointment);
-                                });
-                                if (isIndian) sendReminderSMS(appointment);
-                            }
-                        })();
-
+                        if(response.data.hangoutLink == '') {
+                            createLink(appointment, doctorEmail, patientEmail, isIndian, sendMessage);
+                            console.log('Callling creatLink Function again , creatLink failed this time.');
+                        }
+                        else {
+                            (async () => {
+                                const newAppointment = await Appointment.findById(appointment.id);
+                                console.log(appointment);
+                                newAppointment.overwrite(appointment);
+                                await newAppointment.save();
+    
+                                console.log('sendMessage:::::::::::::::::::::::::::', sendMessage);
+    
+                                if (sendMessage) {
+                                    // Send confirmation mail and sms to patient
+                                    sendConfirmationMail(appointment);
+                                    if (isIndian) sendConfirmationSMS(appointment);
+    
+                                    // CREATING ALARM FOR 15 MINS BEFORE APPOINMENT
+                                    const appTime = appointment.timeSlot.split(" - ")[0];
+                                    var dateObj = moment(`${appointment.date} ${appTime}`, 'DD-MM-YYYY HH:mm');
+                                    dateObj = dateObj.subtract(15, 'minutes')
+                                    console.log(`Reminder mail scheduled for:  ${appointment.date} ${appTime}`);
+                                    console.log(`Current Time : ${getDate().format('DD-MM-YYYY HH:mm')}`);
+                                    console.log(`Time left ${dateObj.diff(getDate(), 'seconds')}`);
+                                    var date = new Date(dateObj);
+    
+                                    alarm(date, async function () {
+                                        console.log(`Sending reminder mail for  ${appointment.id} appointment`);
+                                        sendReminderMail(appointment);
+                                    });
+                                    if (isIndian) sendReminderSMS(appointment);
+                                }
+                            })();
+                        }
 
                         return console.log('Calendar event successfully created.')
                     }
@@ -960,7 +969,9 @@ const createLink = async (appointment, doctorEmail, patientEmail, isIndian, send
                 return e
             }
             else {
-                return console.log(`Sorry I'm busy...`)
+                return console.log(`Sorry I'm busy...`);
+                createLink(appointment, doctorEmail, patientEmail, isIndian, sendMessage);
+                console.log('Callling creatLink Function again , creatLink failed this time.');
             }
         }
     )
