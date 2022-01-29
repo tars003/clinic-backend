@@ -69,7 +69,10 @@ router.post('/set-prescription/:appointmentId', auth, async (req, res) => {
             precautions,
             tests,
             field1,
-            field2
+            field2,
+            field3,
+            field4,
+            field5,
         } = obj;
 
         let appointment = await Appointment.findById(req.params.appointmentId);
@@ -95,6 +98,9 @@ router.post('/set-prescription/:appointmentId', auth, async (req, res) => {
         if(tests) newAppointment['prescription']['tests'] = tests;
         if(field1) newAppointment['prescription']['field1'] = field1;
         if(field2) newAppointment['prescription']['field2'] = field2;
+        if(field3) newAppointment['prescription']['field3'] = field3;
+        if(field4) newAppointment['prescription']['field4'] = field4;
+        if(field5) newAppointment['prescription']['field5'] = field5;
         newAppointment['consultationStatus'] = 'COMPLETED';
         console.log(newAppointment)
         await newAppointment.save()
