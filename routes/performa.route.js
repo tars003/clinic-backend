@@ -46,7 +46,7 @@ router.post('/create', auth, async (req, res) => {
             success: true,
             data: doctor
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -66,7 +66,7 @@ router.get('/get-performa-struct', auth, async (req, res) => {
             success: true,
             data: doctor.performa
         })
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -110,7 +110,7 @@ router.post('/follow/create', auth, async (req, res) => {
             success: true,
             data: doctor
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -129,7 +129,7 @@ router.get('/follow/get-performa-struct', auth, async (req, res) => {
             success: true,
             data: doctor.followPerforma
         })
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -139,11 +139,39 @@ router.get('/follow/get-performa-struct', auth, async (req, res) => {
 });
 
 // DOES PERFORMA EXISTS FOR A PATEINT
-router.get('/get-status', auth, async (req, res) => {
+router.post('/get-status', auth, async (req, res) => {
     try {
+
+        let obj = req.body;
+        obj = JSON.parse(JSON.stringify(obj).replace(/"\s+|\s+"/g, '"'));
+
+        const { patientId } = obj;
+        let performaFlag = false;
+
         const patient = await Patient.findById(req.body.data.id);
-        console.log(patient)
-        if(patient.performa.length > 0){
+
+        if (patient.id == patientId) {
+            if (patient.performa.length > 0) performaFlag = true;
+            else performaFlag = false;
+        }
+        else {
+            let subProfile = patient.profiles.map((subP) => {
+                if (subP.id == patientId) return subP;
+            })
+            subProfile = subProfile[0];
+            if (subProfile) {
+                if (subProfile.performa.length > 0) performaFlag = true;
+                else performaFlag = false;
+            }
+            else {
+                return res.status(400).json({
+                    success: false,
+                    message: 'no subprofile found for given id'
+                })
+            }
+        }
+
+        if (performaFlag) {
             return res.status(200).json({
                 success: true,
                 data: {
@@ -159,7 +187,7 @@ router.get('/get-status', auth, async (req, res) => {
                 }
             })
         }
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -199,7 +227,7 @@ router.post('/set', auth, async (req, res) => {
             success: true,
             data: patient
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -213,7 +241,7 @@ router.get('/get-performa', auth, async (req, res) => {
     try {
         const patient = await Patient.findById(req.body.data.id);
         console.log(patient)
-        if(patient.performa.length > 0){
+        if (patient.performa.length > 0) {
             return res.status(200).json({
                 success: true,
                 data: {
@@ -230,7 +258,7 @@ router.get('/get-performa', auth, async (req, res) => {
                 }
             })
         }
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -247,7 +275,7 @@ router.post('/follow/set/:appId', auth, async (req, res) => {
     try {
         const appointment = await Appointment.findById(req.params.appId);
 
-        if(!appointment) {
+        if (!appointment) {
             return res.status(400).json({
                 success: false,
                 message: 'No appointment found with given id'
@@ -268,7 +296,7 @@ router.post('/follow/set/:appId', auth, async (req, res) => {
             return res;
         });
 
-        
+
         appointment['followPerforma'] = performa;
 
         const newAppointment = await Appointment.findById(req.params.appId);
@@ -279,7 +307,7 @@ router.post('/follow/set/:appId', auth, async (req, res) => {
             success: true,
             data: appointment
         });
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
@@ -295,19 +323,19 @@ router.get('/follow/get-performa/:appId', auth, async (req, res) => {
         const appointment = await Appointment.findById(req.params.appId);
         // console.log(appointment);
 
-        if(!appointment) {
+        if (!appointment) {
             return res.status(400).json({
                 success: false,
                 message: 'No appointment found with given id'
             })
         }
-        
+
         return res.status(200).json({
             success: true,
             data: appointment.followPerforma
         });
 
-    } catch(err) {
+    } catch (err) {
         console.log(err);
         return res.status(503).json({
             success: false,
