@@ -155,8 +155,9 @@ router.post('/get-status', auth, async (req, res) => {
             else performaFlag = false;
         }
         else {
-            let subProfile = patient.profiles.map((subP) => {
-                if (subP.id == patientId) return subP;
+            let subProfile ;
+            patient.profiles.map((subP) => {
+                if (subP.id == patientId) subProfile.push(subP);
             })
             subProfile = subProfile[0];
             if (subProfile) {
