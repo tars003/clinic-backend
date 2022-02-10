@@ -25,7 +25,7 @@ router.post('/add/message/:patientId', auth, async (req, res) => {
             appointmentId
         } = obj;
 
-        let patient = await Patient.findById(req.params.id);
+        let patient = await Patient.findById(req.params.patientId);
         if (!patient) {
             return res.status(404).json({
                 success: false,
