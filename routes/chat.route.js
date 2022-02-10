@@ -40,7 +40,7 @@ router.post('/add/message/:patientId', auth, async (req, res) => {
             })
         }
         let tempObj = {
-            sentTime: sentTime,
+            sentTime: `${moment().format('DD-MM-YYYY HH:mm:ss')}`,
             text: text,
             isSenderPatient : isSenderPatient
         }
