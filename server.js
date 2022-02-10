@@ -25,6 +25,7 @@ app.use("/server/inventory", require('./routes/product.route'));
 app.use("/server/coupon", require('./routes/coupon.route'));
 app.use("/server/package-coupon", require('./routes/packageCoupon.route'));
 app.use("/server/notify", require('./routes/notification.route'));
+app.use("/server/chat", require('./routes/chat.route'));
 
 let storage = multer.diskStorage({
     destination: function (req, file, cb) {

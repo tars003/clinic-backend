@@ -12,6 +12,7 @@ module.exports = async function (req, res, next) {
     const id = data.id;
     // console.log(id)
     if(id == 'admin'){
+      req.body.data = {isDoctor: true};
       next();
     }
     else {
