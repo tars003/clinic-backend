@@ -3,6 +3,8 @@ const moment = require('moment');
 
 const ChatSchema = new mongoose.Schema({
     _id: String,
+    patientName: String,
+    patientGender: String,
     isReadPatient :  Boolean,
     isReadDoctor : Boolean,
     messages: [

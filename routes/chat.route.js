@@ -36,7 +36,9 @@ router.post('/add/message/:patientId', auth, async (req, res) => {
         let chat = await Chat.findById(patient.id);
         if(!chat) {
             chat = await Chat.create({
-                _id: patient.id
+                _id: patient.id,
+                patientName: patient.name,
+                patientGender: patient.gender
             })
         }
         let tempObj = {
@@ -71,7 +73,7 @@ router.get('/get/chat/:patientId', auth, async (req, res) => {
         
         let chat = await Chat.findById(req.params.patientId);
         if(!chat) {
-            return res.status(400).json({
+            return res.status(200).json({
                 success: false,
                 message: 'No chat found for patient id in route'
             });
